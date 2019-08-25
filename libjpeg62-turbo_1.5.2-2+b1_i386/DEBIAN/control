@@ -1,0 +1,10 @@
+Package: libjpeg62-turbo
+Version: 1:1.5.2-2+b1
+Installed-Size: 0
+Maintainer: 张强 <i@i-m.dev>
+Architecture: i386
+Depends: libjpeg-turbo8
+Homepage: https://github.com/zq-97/deepin-wine
+Section: libs
+Priority: optional
+Description: libjpeg62-turbo is replaced by libjpeg-turbo8 on ubuntu, this is just an empty package which declares libjpeg-turbo8 as dependency.

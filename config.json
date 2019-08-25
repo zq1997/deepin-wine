@@ -1,0 +1,44 @@
+{
+  "deepin_repository": {
+    "location": "https://mirrors.tuna.tsinghua.edu.cn/deepin/",
+    "packages_files": [
+      "dists/stable/non-free/binary-i386/Packages"
+    ]
+  },
+  "host_repositories": {
+    "debian": {
+      "location": "https://mirrors.tuna.tsinghua.edu.cn/debian/",
+      "packages_files": [
+        "dists/stable/main/binary-i386/Packages.gz"
+      ]
+    },
+    "ubuntu": {
+      "location": "https://mirrors.tuna.tsinghua.edu.cn/ubuntu/",
+      "packages_files": [
+        "dists/bionic/main/binary-i386/Packages.gz",
+        "dists/bionic/universe/binary-i386/Packages.gz"
+      ],
+      "ignored_packages": [
+        "libjpeg62-turbo"
+      ]
+    }
+  },
+  "ignored_packages": [
+    "libbsd0:i386",
+    "libxt6:i386",
+    "deepin-wine64",
+    "libopencl-1.1-1",
+    "libopencl1"
+  ],
+  "apps": [
+    "deepin.com.qq.office",
+    "deepin.com.qq.im",
+    "deepin.com.qq.im.light",
+    "deepin.com.wechat",
+    "deepin.com.baidu.pan",
+    "deepin.com.thunderspeed",
+    "deepin.com.foxmail",
+    "deepin.cn.com.winrar",
+    "deepin.cn.360.yasuo"
+  ]
+}
