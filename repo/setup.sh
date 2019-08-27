@@ -21,7 +21,8 @@ fi
 if [ ! -f "$LIST_FILE" ]; then
   echo "正在添加软件源"
   echo "deb ${SITE}/deepin/ ./" | tee $LIST_FILE
-  if ! apt-cache policy libjpeg62-turbo:i386 | grep -qP ' +500 (?!https://deepin-wine\.i-m\.dev/)'; then
+  # 这里不能检查i386包，因为可能刚添加架构还没刷新出来
+  if ! apt-cache policy libjpeg62-turbo | grep -qP ' +500 (?!https://deepin-wine\.i-m\.dev/)'; then
     echo "deb ${SITE}/ubuntu-fix/ ./" | tee -a $LIST_FILE
   fi
   NEED_UPDATE=1
