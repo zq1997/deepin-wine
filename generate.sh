@@ -3,8 +3,10 @@ set -e
 
 mkdir -p repo/ubuntu-fix/ repo/deepin/
 python3 extract_deepin_repo.py
-dpkg-deb -b libjpeg62-turbo_1.5.2-2+b1_i386/ repo/ubuntu-fix
+
 cd repo/ubuntu-fix/
+rm -f *.deb
+dpkg-deb -b ../../libjpeg62-turbo_*/ .
 dpkg-scanpackages . > Packages
 cd ../..
 

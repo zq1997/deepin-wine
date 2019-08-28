@@ -86,6 +86,7 @@ class Repository:
 
 
 def extract_packages(repo, minus_repo, package_names, extracted):
+    depends_pattern = re.compile(r'\s*(\S+?)(?::\S+)?\s*(?:\(.+?\))?\s*(?:[,|]|$)')
     missing_packages = []
     for name in package_names:
         if name in extracted or minus_repo.search_packages(name, False):
@@ -96,9 +97,7 @@ def extract_packages(repo, minus_repo, package_names, extracted):
         else:
             extracted[name].extend(packages)
             for raw_depends in set(p['depends'] or '' for p in packages):
-                depends = re.sub(r'\([\s\S]+?\)', '', raw_depends)
-                depends = re.split('[|,]', depends)
-                depends = set(filter(bool, map(str.strip, depends)))
+                depends = re.findall(depends_pattern, raw_depends)
                 for missing_dep in extract_packages(repo, minus_repo, depends, extracted):
                     missing_packages.append([name] + missing_dep)
     return missing_packages

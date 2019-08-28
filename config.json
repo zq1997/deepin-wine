@@ -24,8 +24,6 @@
     }
   },
   "ignored_packages": [
-    "libbsd0:i386",
-    "libxt6:i386",
     "deepin-wine64",
     "libopencl-1.1-1",
     "libopencl1"
