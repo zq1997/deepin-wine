@@ -38,29 +38,30 @@ def compile_re(pattern, flags):
     return re.compile(pattern.replace(' ', r'[^\S\n]'), flags)
 
 
-class Package:
+class Package(OrderedDict):
     COMMENT_PATTERN = compile_re(r'^#.*', re.M)
-    FILED_PATTERN = compile_re(r'^(\S+) *: *(.*(?:\n .*)*)', re.M)
+    FILED_PATTERN = compile_re(r'^(\S+) *: *(.*?) *(?=\n\S|\n?\Z)', re.M | re.S)
+
+    class InsensitiveString(str):
+        def __hash__(self):
+            return self.lower().__hash__()
+
+        def __eq__(self, other):
+            return self.lower().__eq__(other.lower())
 
     def __init__(self, control_info):
-        control_info = re.sub(Package.COMMENT_PATTERN, '', control_info, re.M)
-        self.fields = OrderedDict(map(
-            lambda kv: (kv[0].lower(), (kv[0], kv[1].strip())),
-            re.findall(Package.FILED_PATTERN, control_info)
-        ))
+        control_info = re.sub(Package.COMMENT_PATTERN, '', control_info)
+        super().__init__(re.findall(Package.FILED_PATTERN, control_info))
 
     def __getitem__(self, key):
-        if key.lower() in self.fields:
-            return self.fields[key.lower()][1]
-        return None
+        key = Package.InsensitiveString(key)
+        return super().__getitem__(key) if key in self.keys() else None
 
     def __setitem__(self, key, value):
-        if key.lower() in self.fields:
-            key = self.fields[key.lower()][0]
-        self.fields[key.lower()] = (key, value)
+        super().__setitem__(Package.InsensitiveString(key), value)
 
     def __str__(self):
-        return '\n'.join(': '.join(self.fields[k]) for k in self.fields.keys())
+        return '\n'.join(': '.join(item) for item in self.items())
 
 
 class Repository:
