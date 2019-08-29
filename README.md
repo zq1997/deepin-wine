@@ -6,21 +6,46 @@
 >
 > 提供移植版软件仓库，安装QQ只需要`apt install`这么简单
 
-## 安装教程
+## 快速开始
 
-### 环境配置
+1. 环境配置
 
-初次使用需要先进行环境配置，可以选择自动配置或者手动配置。
+   运行如下一行命令即可
 
-#### 自动配置
+   ```sh
+   wget -qO- https://deepin-wine.i-m.dev/setup.sh | sudo sh
+   ```
 
-运行如下一行命令即可
+2. 应用安装
 
-```sh
-wget -qO- https://deepin-wine.i-m.dev/setup.sh | sudo sh
-```
+   现在，你可以像对待普通的软件包一样，使用`apt-get`系列命令进行各个deepin-wine应用安装、更新、卸载和依赖清理了。
 
-#### 手动配置
+   比如安装TIM只需要运行下面的命令，
+
+   ```sh
+   sudo apt-get install deepin.com.qq.office
+   ```
+
+   各个应用的软件包名如下：
+
+   |    应用    |          包名           |
+   | :--------: | :---------------------: |
+   |    TIM     |  deepin.com.qq.office   |
+   |     QQ     |    deepin.com.qq.im     |
+   |  QQ轻聊版  | deepin.com.qq.im.light  |
+   |  百度网盘  |  deepin.com.baidu.pan   |
+   | 迅雷极速版 | deepin.com.thunderspeed |
+   |  Foxmail   |   deepin.com.foxmail    |
+   |   WinRAR   |  deepin.cn.com.winrar   |
+   |  360压缩   |   deepin.cn.360.yasuo   |
+   
+   微信最新版出了点兼容性问题，不支持直接安装，不过可以配置环境后[下载旧版deb包](http://packages.deepin.com/deepin/pool/non-free/d/deepin.com.wechat/deepin.com.wechat_2.6.2.31deepin0_i386.deb)手动安装。
+
+## 环境配置过程详解
+
+**不关心细节的同学不必了解这部分，完全不影响使用**
+
+环境配置其实就是添加我自行构建的软件仓库为源，具体包括以下三步。
 
 1. 添加i386架构
 
@@ -39,7 +64,7 @@ wget -qO- https://deepin-wine.i-m.dev/setup.sh | sudo sh
    下载[i-m.dev.gpg](https://deepin-wine.i-m.dev/i-m.dev.gpg)复制到`/etc/apt/trusted.gpg.d/`目录即可，或者直接运行
 
    ```sh
-   wget -q -O /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
+   sudo wget -q -O /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
    ```
 
 3. 添加软件源
@@ -66,48 +91,6 @@ wget -qO- https://deepin-wine.i-m.dev/setup.sh | sudo sh
    sudo apt-get update
    ```
 
-### 安装应用
-
-就像普通的软件包一样，现在你可以使用`apt-get`系列命令进行各个deepin-wine应用安装、更新、卸载和依赖清理了。
-
-如安装TIM，
-
-```sh
-sudo apt-get install deepin.com.qq.office
-```
-
-移植仓库会定期从官方仓库拉取更新，如果有更新，更新方法与一般软件无异
-
-```sh
-sudo apt-get update && sudo apt-get dist-upgrade
-```
-
-卸载，
-
-```sh
-sudo apt-get purge deepin.com.qq.office
-```
-
-残留依赖清理，
-
-```sh
-sudo apt-get autoremove
-```
-
-各个应用的软件包名如下：
-
-|    应用    |          包名           |
-| :--------: | :---------------------: |
-|    TIM     |  deepin.com.qq.office   |
-|     QQ     |    deepin.com.qq.im     |
-|  QQ轻聊版  | deepin.com.qq.im.light  |
-|    微信    |    deepin.com.wechat    |
-|  百度网盘  |  deepin.com.baidu.pan   |
-| 迅雷极速版 | deepin.com.thunderspeed |
-|  Foxmail   |   deepin.com.foxmail    |
-|   WinRAR   |  deepin.cn.com.winrar   |
-|  360压缩   |   deepin.cn.360.yasuo   |
-
 ## 版权相关
 
 这个git仓库中的代码只包括了移植版软件仓库的构建工具，最后仓库中软件包的下载地址会被301重定向到deepin的官方仓库（及镜像）中去，其版权由[deepin](https://www.deepin.com/)所有。
@@ -116,4 +99,4 @@ sudo apt-get autoremove
 
 ## 感谢
 
-本工作是借鉴了[wszqkzqk](https://github.com/wszqkzqk)的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。（如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。）
+本工作是借鉴了[wszqkzqk](https://github.com/wszqkzqk)的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的*兼容*wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。
