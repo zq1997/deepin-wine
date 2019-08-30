@@ -33,13 +33,12 @@
    |    TIM     |  deepin.com.qq.office   |
    |     QQ     |    deepin.com.qq.im     |
    |  QQ轻聊版  | deepin.com.qq.im.light  |
+   |    微信    |    deepin.com.wechat    |
    |  百度网盘  |  deepin.com.baidu.pan   |
    | 迅雷极速版 | deepin.com.thunderspeed |
    |  Foxmail   |   deepin.com.foxmail    |
    |   WinRAR   |  deepin.cn.com.winrar   |
    |  360压缩   |   deepin.cn.360.yasuo   |
-   
-   微信最新版出了点兼容性问题，不支持直接安装，不过可以配置环境后[下载旧版deb包](http://packages.deepin.com/deepin/pool/non-free/d/deepin.com.wechat/deepin.com.wechat_2.6.2.31deepin0_i386.deb)手动安装。
 
 ## 环境配置过程详解
 
