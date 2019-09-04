@@ -26,7 +26,7 @@
    sudo apt-get install deepin.com.qq.office
    ```
 
-   各个应用的软件包名如下：
+   常用应用的软件包名如下：
 
    |    应用    |          包名           |
    | :--------: | :---------------------: |
@@ -39,6 +39,10 @@
    |  Foxmail   |   deepin.com.foxmail    |
    |   WinRAR   |  deepin.cn.com.winrar   |
    |  360压缩   |   deepin.cn.360.yasuo   |
+
+   还包括一些其他的应用，不再一一列出。
+
+   除了QQ、TIM、微信和百度云几个特别常用的外，其兼容性未进行专门测试，如果发现了问题还请在issues中提出。
 
 ## 环境配置过程详解
 
@@ -98,4 +102,4 @@
 
 ## 感谢
 
-本工作是借鉴了[wszqkzqk](https://github.com/wszqkzqk)的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的*兼容*wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。
+本工作是借鉴了[wszqkzqk](https://github.com/wszqkzqk)的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。

@@ -29,14 +29,6 @@
     "libopencl1"
   ],
   "apps": [
-    "deepin.com.qq.office",
-    "deepin.com.qq.im",
-    "deepin.com.qq.im.light",
-    "deepin.com.wechat",
-    "deepin.com.baidu.pan",
-    "deepin.com.thunderspeed",
-    "deepin.com.foxmail",
-    "deepin.cn.com.winrar",
-    "deepin.cn.360.yasuo"
+    "re=deepin\\..+"
   ]
 }

@@ -117,21 +117,31 @@ def extract_apps(repo, minus_repo, app_names, ignored_packages):
     return packages_file
 
 
-if __name__ == '__main__':
+def main():
     with open(get_path('config.json')) as f:
         config = json.load(f)
 
-    common_packages_file = None
     deepin_repo = Repository(config['deepin_repository'])
+    app_names = []
+    for rule in config['apps']:
+        rule_type, rule_content = rule.split('=')
+        if rule_type == 're':
+            pattern = re.compile(rule_content)
+            app_names.extend(filter(lambda x: re.fullmatch(pattern, x), deepin_repo.packages.keys()))
+        elif rule_type == '':
+            app_names.append(rule_content)
+
+    extracted_packages_for_hosts = []
     for host, host_config in config['host_repositories'].items():
         print('>>> ', host)
         host_repo = Repository(host_config)
         ignored = set(config.get('ignored_packages', []) + host_config.get('ignored_packages', []))
-        host_packages_file = extract_apps(deepin_repo, host_repo, config['apps'], ignored)
-        if common_packages_file is None:
-            common_packages_file = host_packages_file
-        else:
-            assert common_packages_file, host_packages_file
+        extracted_packages_for_hosts.append(extract_apps(deepin_repo, host_repo, app_names, ignored))
 
+    assert all(map(lambda x: x == extracted_packages_for_hosts[0], extracted_packages_for_hosts[1:]))
     with open(get_path('repo/deepin/Packages'), 'wt') as f:
-        f.write(common_packages_file)
+        f.write(extracted_packages_for_hosts[0])
+
+
+if __name__ == '__main__':
+    main()
