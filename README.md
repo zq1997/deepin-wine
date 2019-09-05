@@ -4,11 +4,11 @@
 >
 > 使用deepin官方原版软件包
 >
-> 提供移植版软件仓库，安装QQ只需要`apt install`这么简单
+> 安装QQ只需要`apt-get install`这么简单
 
 ## 快速开始
 
-1. 环境配置
+1. 添加仓库
 
    运行如下一行命令即可
 
@@ -42,9 +42,11 @@
 
    还包括一些其他的应用，不再一一列出。
 
-   除了QQ、TIM、微信和百度云几个特别常用的外，其兼容性未进行专门测试，如果发现了问题还请在issues中提出。
+   除了QQ、TIM、微信和百度云几个特别常用的外，其余应用兼容性未专门进行测试，如果发现了问题还请在issues中提出。
 
-## 环境配置过程详解
+3. ~~在页面右上角点个star滋瓷一下~~
+
+## 添加仓库过程详解
 
 **不关心细节的同学不必了解这部分，完全不影响使用**
 
@@ -91,6 +93,27 @@
 4. 刷新软件源
 
    ```sh
+   sudo apt-get update
+   ```
+
+# 卸载清理
+
+1. 清理应用运行时目录
+
+   例如QQ/TIM会把帐号配置、聊天文件等保存`~/Documents/Tencent Files`目录下，而微信是`~/Documents/WeChat Files`，删除这些文件夹以移除帐号配置等数据。
+
+2. 清理wine容器
+
+   删除`~/.deepinwine/`目录下相应名称的文件夹即可。
+
+3. 卸载软件包
+
+   `sudo apt-get purge xxx`+`sudo apt-get autoremove`，常规操作。
+
+4. 移除软件仓库
+
+   ```sh
+   sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
    sudo apt-get update
    ```
 
