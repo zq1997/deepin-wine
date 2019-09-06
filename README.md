@@ -40,11 +40,11 @@
    |   WinRAR   |  deepin.cn.com.winrar   |
    |  360压缩   |   deepin.cn.360.yasuo   |
 
-   还包括一些其他的应用，不再一一列出。
+   当然还有一些其他的应用，不全部列出。
 
-   除了QQ、TIM、微信和百度云几个特别常用的外，其余应用兼容性未专门进行测试，如果发现了问题还请在issues中提出。
+   除了QQ、TIM、微信和百度云这些个常用的，其余应用兼容性未实际测试，如果发现了问题还请在issues中提出。
 
-3. ~~在页面右上角点个star滋瓷一下~~
+3. 在页面右上角点个star滋瓷一下（逃）
 
 ## 添加仓库过程详解
 
@@ -96,7 +96,9 @@
    sudo apt-get update
    ```
 
-# 卸载清理
+## 卸载清理
+
+卸载与清理按照层次从浅到深可以分为如下四个层级，
 
 1. 清理应用运行时目录
 
@@ -108,7 +110,7 @@
 
 3. 卸载软件包
 
-   `sudo apt-get purge xxx`+`sudo apt-get autoremove`，常规操作。
+   常规的`sudo apt-get purge xxx`+`sudo apt-get autoremove`操作。
 
 4. 移除软件仓库
 
@@ -116,6 +118,8 @@
    sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
    sudo apt-get update
    ```
+   
+   这会把一切恢复到最初初始的状态。
 
 ## 版权相关
 
