@@ -32,3 +32,6 @@ if [ $NEED_UPDATE -eq 1 ]; then
   echo "正在刷新软件源"
   apt-get update
 fi
+
+echo '准备工作完成，现在可以使用apt系列命令安装deepin版的QQ、微信了。'
+echo '如果觉得有用的话，可以去 https://github.com/zq1997/deepin-wine 点个star🥺'
