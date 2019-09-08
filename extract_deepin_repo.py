@@ -4,13 +4,18 @@ import gzip
 import json
 import os
 import re
+import sys
 import urllib.parse
 import urllib.request
 from collections import defaultdict, OrderedDict
 
 
+def relative_path(path):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
+
+
 def request_url(url, gunzip=False, decode=False):
-    cache_dir = 'cache'
+    cache_dir = relative_path('cache')
     cache_file = os.path.join(cache_dir, urllib.parse.quote(url, safe=''))
     if os.path.isfile(cache_file):
         with open(cache_file, 'rb') as fin:
@@ -113,8 +118,8 @@ def extract_apps(repo, minus_repo, app_names, ignored_packages):
     return packages_file
 
 
-def main():
-    with open('config.json') as f:
+def extract_deepin_repo(output_filepath):
+    with open(relative_path('config.json'), 'rt') as f:
         config = json.load(f)
 
     deepin_repo = Repository(config['deepin_repository'])
@@ -136,7 +141,6 @@ def main():
 
     assert len(extracted_packages_for_hosts) == 1
     extracted_packages = next(iter(extracted_packages_for_hosts))
-    output_filepath = 'repo/deepin/Packages'
     try:
         with open(output_filepath, 'rt') as f:
             assert f.read() == extracted_packages
@@ -146,4 +150,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    extract_deepin_repo(sys.argv[1])

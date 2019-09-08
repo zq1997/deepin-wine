@@ -1,5 +1,5 @@
 /.idea/
 
 /cache/
-/repo/deepin/
-/repo/ubuntu-fix/
+/repo/*
+!/repo/setup.sh
