@@ -119,7 +119,7 @@ def extract_apps(repo, minus_repo, app_names, ignored_packages):
 
 
 def extract_deepin_repo(output_filepath):
-    with open(relative_path('config.json'), 'rt') as f:
+    with open(relative_path('repo_config.json'), 'rt') as f:
         config = json.load(f)
 
     deepin_repo = Repository(config['deepin_repository'])
