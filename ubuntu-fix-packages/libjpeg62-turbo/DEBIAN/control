@@ -3,7 +3,7 @@ Version: 1:1.5.1-2
 Installed-Size: 0
 Maintainer: 张强 <i@i-m.dev>
 Architecture: i386
-Depends: libjpeg-turbo8
+Depends: libjpeg62, libjpeg-turbo8
 Multi-Arch: same
 Homepage: https://github.com/zq-97/deepin-wine
 Section: libs
