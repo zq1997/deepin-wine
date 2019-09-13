@@ -69,7 +69,7 @@
    下载[i-m.dev.gpg](https://deepin-wine.i-m.dev/i-m.dev.gpg)复制到`/etc/apt/trusted.gpg.d/`目录即可，或者直接运行
 
    ```sh
-   sudo wget -q -O /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
+   sudo wget -qO /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
    ```
 
 3. 添加软件源
@@ -110,7 +110,7 @@
 
 3. 卸载软件包
 
-   常规的`sudo apt-get purge xxx`+`sudo apt-get autoremove`操作。
+   常规的`sudo apt-get purge xxx`和`sudo apt-get autoremove`操作。
 
 4. 移除软件仓库
 
@@ -129,4 +129,4 @@
 
 ## 感谢
 
-本工作是借鉴了[wszqkzqk](https://github.com/wszqkzqk)的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。
+本工作是借鉴了**wszqkzqk**的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。
