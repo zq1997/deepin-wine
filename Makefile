@@ -31,10 +31,11 @@ $(REPO)/setup.sh: $(REPO)/i-m.dev.gpg setup.template.sh
 	gzip -c9 $< > $@
 
 ifdef REFETCH
-$(REPO)/deepin/Packages: FORCE cache/
+$(REPO)/deepin/Packages: FORCE
 	rm -f cache/*
 else
-$(REPO)/deepin/Packages: cache/
+$(REPO)/deepin/Packages:
+	mkdir -p cache
 endif
 	python3 extract_deepin_repo.py $@
 

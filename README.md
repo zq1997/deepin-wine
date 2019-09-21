@@ -36,9 +36,7 @@
    |    微信    |    deepin.com.wechat    |
    |  百度网盘  |  deepin.com.baidu.pan   |
    | 迅雷极速版 | deepin.com.thunderspeed |
-   |  Foxmail   |   deepin.com.foxmail    |
    |   WinRAR   |  deepin.cn.com.winrar   |
-   |  360压缩   |   deepin.cn.360.yasuo   |
 
    当然还有一些其他的应用，不全部列出。
 
@@ -129,4 +127,4 @@
 
 ## 感谢
 
-本工作是借鉴了**wszqkzqk**的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)项目经验，原理基本相同，只是进行了一些包装可以让使用变得方便一点。同时，这个项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，还可以再按这个项目进行配置，方便进行后续更新卸载等管理。另外，如果使用中遇到问题，也可以先去这个项目搜搜有没有相关issue。
+本工作是参考了**wszqkzqk**的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)工作，在此基础上进行了高更一层的包装，让使用变得方便一点。同时，此项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，依然可以再按此项目进行配置，可以更方便地进行后续管理。
