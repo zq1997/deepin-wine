@@ -1,5 +1,4 @@
 /.idea/
 
 /cache/
-/repo/*
-!/repo/setup.sh
+/repo/
