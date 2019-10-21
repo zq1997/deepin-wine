@@ -13,7 +13,7 @@
    运行如下一行命令即可
 
    ```sh
-   wget -qO- https://deepin-wine.i-m.dev/setup.sh | sudo sh
+   wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
    ```
 
 2. 应用安装
@@ -67,7 +67,7 @@
    下载[i-m.dev.gpg](https://deepin-wine.i-m.dev/i-m.dev.gpg)复制到`/etc/apt/trusted.gpg.d/`目录即可，或者直接运行
 
    ```sh
-   sudo wget -qO /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
+   sudo wget -O /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
    ```
 
 3. 添加软件源

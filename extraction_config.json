@@ -29,6 +29,7 @@
     "libopencl1"
   ],
   "apps": [
-    "re=deepin\\..+"
+    "re+deepin\\..+",
+    "-deepin.net.cnki.cajviewer"
   ]
 }

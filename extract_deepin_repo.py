@@ -9,24 +9,23 @@ import urllib.parse
 import urllib.request
 from collections import defaultdict, OrderedDict
 
-
-def relative_path(path):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
+request_cache_dir = None
 
 
 def request_url(url, gunzip=False, decode=False):
-    cache_dir = relative_path('cache')
-    cache_file = os.path.join(cache_dir, urllib.parse.quote(url, safe=''))
-    if os.path.isfile(cache_file):
+    use_cache = request_cache_dir is not None
+    cache_file = os.path.join(request_cache_dir, urllib.parse.quote(url, safe='')) if use_cache else None
+    if use_cache and os.path.isfile(cache_file):
         with open(cache_file, 'rb') as fin:
             content = fin.read()
     else:
         response = urllib.request.urlopen(url)
         assert response.status == 200
         content = response.read()
-        if os.path.isdir(cache_dir):
-            with open(cache_file, 'wb') as fount:
-                fount.write(content)
+        if use_cache:
+            os.makedirs(request_cache_dir, exist_ok=True)
+            with open(cache_file, 'wb') as fout:
+                fout.write(content)
     if gunzip:
         content = gzip.decompress(content)
     if decode:
@@ -98,46 +97,49 @@ def extract_packages(repo, minus_repo, package_names, extracted):
         else:
             extracted[name].extend(packages)
             for raw_depends in set(p['depends'] or '' for p in packages):
-                depends = re.findall(depends_pattern, raw_depends)
+                depends = set(re.findall(depends_pattern, raw_depends))
                 for missing_dep in extract_packages(repo, minus_repo, depends, extracted):
                     missing_packages.append([name] + missing_dep)
     return missing_packages
 
 
-def extract_apps(repo, minus_repo, app_names, ignored_packages):
-    extracted_packages = defaultdict(list)
-    missing_packages = extract_packages(repo, minus_repo, app_names, extracted_packages)
-    for missing in missing_packages:
-        if missing[-1] not in ignored_packages:
-            print('缺失软件包:', ' -> '.join(missing))
-    packages_file = ''
-    for name in sorted(extracted_packages.keys()):
-        for pkg in extracted_packages[name]:
-            pkg['filename'] = 'files/' + pkg['filename']
-            packages_file += str(pkg) + '\n\n'
-    return packages_file
-
-
-def extract_deepin_repo(output_filepath):
-    with open(relative_path('extraction_config.json'), 'rt') as f:
+def extract_deepin_repo(config_file_path, output_filepath):
+    with open(config_file_path, 'rt') as f:
         config = json.load(f)
 
     deepin_repo = Repository(config['deepin_repository'])
-    app_names = []
+    app_names = set()
     for rule in config['apps']:
-        rule_type, rule_content = rule.split('=')
+        rule_type, rule_action, rule_text = re.fullmatch(r'(.*?)([+\-])(.+)', rule).groups()
         if rule_type == 're':
-            pattern = re.compile(rule_content)
-            app_names.extend(filter(lambda x: re.fullmatch(pattern, x), deepin_repo.packages.keys()))
+            pattern = re.compile(rule_text)
+            if rule_action == '+':
+                app_names.update(filter(lambda x: re.fullmatch(pattern, x), deepin_repo.packages.keys()))
+            elif rule_action == '-':
+                app_names = set(filter(lambda x: not re.fullmatch(pattern, x), app_names))
         elif rule_type == '':
-            app_names.append(rule_content)
+            if rule_action == '+':
+                app_names.add(rule_text)
+            elif rule_action == '-':
+                app_names.remove(rule_text)
 
     extracted_packages_for_hosts = set()
     for host, host_config in config['host_repositories'].items():
         print('>>> ', host)
         host_repo = Repository(host_config)
         ignored = set(config.get('ignored_packages', []) + host_config.get('ignored_packages', []))
-        extracted_packages_for_hosts.add(extract_apps(deepin_repo, host_repo, app_names, ignored))
+
+        extracted_packages = defaultdict(list)
+        missing_packages = extract_packages(deepin_repo, host_repo, app_names, extracted_packages)
+        for missing in missing_packages:
+            if missing[-1] not in ignored:
+                print('缺失软件包:', ' -> '.join(missing))
+        packages_file = ''
+        for name in sorted(extracted_packages.keys()):
+            for pkg in extracted_packages[name]:
+                pkg['filename'] = 'files/' + pkg['filename']
+                packages_file += str(pkg) + '\n\n'
+        extracted_packages_for_hosts.add(packages_file)
 
     assert len(extracted_packages_for_hosts) == 1
     extracted_packages = next(iter(extracted_packages_for_hosts))
@@ -150,4 +152,5 @@ def extract_deepin_repo(output_filepath):
 
 
 if __name__ == '__main__':
-    extract_deepin_repo(sys.argv[1])
+    request_cache_dir = sys.argv[3]
+    extract_deepin_repo(sys.argv[1], sys.argv[2])

@@ -6,17 +6,19 @@ REPO ?= repo
 all: setup ubuntu-fix deepin
 setup: $(REPO)/ $(REPO)/i-m.dev.gpg $(REPO)/setup.sh
 deepin ubuntu-fix: % : $(REPO)/%/ $(REPO)/%/InRelease $(REPO)/%/Release.gpg
+
 clean:
 	rm -rf $(REPO)
 
 %/:
-	mkdir -p $*
+	mkdir -p $@
 
 $(REPO)/i-m.dev.gpg:
 	gpg --export -o $@
 
 $(REPO)/setup.sh: $(REPO)/i-m.dev.gpg setup.template.sh
 	sed "s~<GPG_KEY_CONTENT>~$$(base64 -w0 $<)~" $(word 2, $^) > $@
+	chmod a+x $@
 
 %/InRelease: %/Release
 	gpg --yes --clear-sign -o $@ $<
@@ -32,18 +34,16 @@ $(REPO)/setup.sh: $(REPO)/i-m.dev.gpg setup.template.sh
 
 ifdef REFETCH
 $(REPO)/deepin/Packages: FORCE
-	rm -f cache/*
+	rm -rf cache
 else
 $(REPO)/deepin/Packages:
-	mkdir -p cache
 endif
-	python3 extract_deepin_repo.py $@
+	python3 extract_deepin_repo.py extraction_config.json $@ cache
 
-UBUNTU_FIX_PACKAGES := $(notdir $(wildcard ubuntu-fix-packages/*))
-$(REPO)/ubuntu-fix/Packages: $(addprefix $(REPO)/ubuntu-fix/, $(addsuffix .deb, $(UBUNTU_FIX_PACKAGES)))
+$(REPO)/ubuntu-fix/Packages: $(foreach pkg, $(notdir $(wildcard ubuntu-fix/*)), $(REPO)/ubuntu-fix/$(pkg).deb)
 	rm -f $(filter-out $^, $(wildcard $(@D)/*.deb))
 	cd $(@D) && dpkg-scanpackages . > $(@F)
 
-$(REPO)/ubuntu-fix/%.deb: ubuntu-fix-packages/%/DEBIAN/control
-	dpkg-deb -b ubuntu-fix-packages/$* $(@D)
+$(REPO)/ubuntu-fix/%.deb: ubuntu-fix/%/DEBIAN/control
+	dpkg-deb -b ubuntu-fix/$* $(@D)
 
