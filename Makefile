@@ -38,7 +38,8 @@ $(REPO)/deepin/Packages: FORCE
 else
 $(REPO)/deepin/Packages:
 endif
-	python3 extract_deepin_repo.py extraction_config.json $@ cache
+	python3 extract_deepin_repo.py extraction_config.json $@ files/ cache
+	mkdir -p $(REPO)/deepin/files
 
 $(REPO)/ubuntu-fix/Packages: $(foreach pkg, $(notdir $(wildcard ubuntu-fix/*)), $(REPO)/ubuntu-fix/$(pkg).deb)
 	rm -f $(filter-out $^, $(wildcard $(@D)/*.deb))

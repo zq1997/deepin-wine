@@ -103,10 +103,7 @@ def extract_packages(repo, minus_repo, package_names, extracted):
     return missing_packages
 
 
-def extract_deepin_repo(config_file_path, output_filepath):
-    with open(config_file_path, 'rt') as f:
-        config = json.load(f)
-
+def extract_deepin_repo(config, filename_prefix):
     deepin_repo = Repository(config['deepin_repository'])
     app_names = set()
     for rule in config['apps']:
@@ -137,20 +134,21 @@ def extract_deepin_repo(config_file_path, output_filepath):
         packages_file = ''
         for name in sorted(extracted_packages.keys()):
             for pkg in extracted_packages[name]:
-                pkg['filename'] = 'files/' + pkg['filename']
+                pkg['filename'] = filename_prefix + pkg['filename']
                 packages_file += str(pkg) + '\n\n'
         extracted_packages_for_hosts.add(packages_file)
 
     assert len(extracted_packages_for_hosts) == 1
-    extracted_packages = next(iter(extracted_packages_for_hosts))
-    try:
-        with open(output_filepath, 'rt') as f:
-            assert f.read() == extracted_packages
-    except (FileNotFoundError, AssertionError):
-        with open(output_filepath, 'wt') as f:
-            f.write(extracted_packages)
+    return next(iter(extracted_packages_for_hosts))
 
 
 if __name__ == '__main__':
-    request_cache_dir = sys.argv[3]
-    extract_deepin_repo(sys.argv[1], sys.argv[2])
+    request_cache_dir = sys.argv[4]
+    with open(sys.argv[1], 'rt') as f:
+        extracted_packages = extract_deepin_repo(json.load(f), sys.argv[3])
+        try:
+            with open(sys.argv[2], 'rt') as f:
+                assert f.read() == extracted_packages
+        except (FileNotFoundError, AssertionError):
+            with open(sys.argv[2], 'wt') as f:
+                f.write(extracted_packages)
