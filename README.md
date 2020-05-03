@@ -6,6 +6,17 @@
 >
 > 安装QQ只需要`apt-get install`这么简单
 
+## 关于V2
+
+**deepin-wine**移植仓库现已升级为**V2**版本，兼容更多发行版。
+
+**V1**仓库源现在依然可以使用，但将来会择期关闭。运行如下命令可以从**V1**升级到**V2**。
+
+```sh
+sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg
+wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
+```
+
 ## 快速开始
 
 1. 添加仓库
@@ -44,7 +55,7 @@
 
 **不关心细节的同学不必了解这部分，完全不影响使用**
 
-环境配置其实就是添加我自行构建的软件仓库为源，具体包括以下三步。
+环境配置其实就是添加我自行构建的软件仓库为源，具体包括以下几步。
 
 1. 添加i386架构
 
@@ -56,33 +67,23 @@
    sudo dpkg --add-architecture i386
    ```
 
-2. 添加GPG公钥
-
-   使用第三方软件仓库需要添加其公钥。
-
-   下载[i-m.dev.gpg](https://deepin-wine.i-m.dev/i-m.dev.gpg)复制到`/etc/apt/trusted.gpg.d/`目录即可，或者直接运行
-
-   ```sh
-   sudo wget -O /etc/apt/trusted.gpg.d/i-m.dev.gpg "https://deepin-wine.i-m.dev/i-m.dev.gpg"
-   ```
-
 3. 添加软件源
 
-   创建`/etc/apt/sources.list.d/deepin-wine.i-m.dev.list`文件，并先添加如下内容，
+   创建`/etc/apt/sources.list.d/deepin-wine.i-m.dev.list`文件，编辑其内容如下，
 
    ```
-   deb https://deepin-wine.i-m.dev/deepin/ ./
+   deb [trusted=yes] https://deepin-wine.i-m.dev /
    ```
 
-   （Debian跳过此条，）如果是Ubuntu/Mint等，还需要继续添加如下内容，
+3. 设置源优先级
+
+   创建`/etc/apt/preferences.d/deepin-wine.i-m.dev.pref`文件，编辑其内容如下，
 
    ```
-   deb https://deepin-wine.i-m.dev/ubuntu-fix/ ./
+   Package: *
+   Pin: release l=deepin-wine
+   Pin-Priority: 200
    ```
-
-   第一条源的仓库中提供了deepin-wine环境与应用相关的软件包。
-
-   第二条源是一个针对Ubuntu等系统的修复，因为这些系统上的`libjpeg62-turbo`已经被`libjpeg-turbo8`取代了，这一行对应的软件仓库中提供了一个虚拟`libjpeg62-turbo`包修复解决了这个问题。所以实际上，要不要添加第二行，可以观察`apt-cache policy libjpeg62-turbo:i386`命令的输出，看看原生的软件仓库中是否提供了`libjpeg62-turbo`包再行决定。
 
 4. 刷新软件源
 
@@ -109,7 +110,7 @@
 4. 移除软件仓库
 
    ```sh
-   sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
+   sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
    sudo apt-get update
    ```
    
