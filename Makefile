@@ -13,7 +13,7 @@ clean:
 
 download:
 	mkdir -p $(BUILD)
-	python3 download.py -v -d '$(BUILD)' \
+	@python3 download.py -v -d '$(BUILD)' \
 		-t 'https://mirrors.tuna.tsinghua.edu.cn/{0}/dists/{1}/{2}/binary-i386/Packages{3}' -s '~' \
 		-f deepin~stable~main~.gz \
 		-f deepin~stable~non-free~.gz \
@@ -40,29 +40,29 @@ $(BUILD)/%.pkg:
 	for f in $+; do sed -E -e '/^#/d' -e '$$ s/$$/\n\n/' $$f; done >$@
 
 $(BUILD)/%.trans: $(BUILD)/deepin.pkg $(BUILD)/%.pkg
-	python3 transplant.py -o $@ transplant -s $< -t $(lastword $+) \
-		"deepin.cn.360.yasuo" \
-		"deepin.cn.com.winrar" \
-		"deepin.com.95579.cjsc" \
-		"deepin.com.aaa-logo" \
-		"deepin.com.baidu.pan" \
-		"deepin.com.cmbchina" \
-		"deepin.com.foxmail" \
-		"deepin.com.gtja.fuyi" \
-		"deepin.com.qq.b.crm" \
-		"deepin.com.qq.b.eim" \
-		"deepin.com.qq.im" \
-		"deepin.com.qq.im.light" \
-		"deepin.com.qq.office" \
-		"deepin.com.qq.rtx2015" \
-		"deepin.com.taobao.aliclient.qianniu" \
-		"deepin.com.taobao.wangwang" \
-		"deepin.com.thunderspeed" \
-		"deepin.com.wechat" \
-		"deepin.com.weixin.work" \
-		"deepin.net.263.em" \
-		"deepin.org.7-zip" \
-		"deepin.org.foobar2000"
+	@python3 transplant.py -o $@ transplant -s $< -t $(lastword $+) \
+		deepin.cn.360.yasuo \
+		deepin.cn.com.winrar \
+		deepin.com.95579.cjsc \
+		deepin.com.aaa-logo \
+		deepin.com.baidu.pan \
+		deepin.com.cmbchina \
+		deepin.com.foxmail \
+		deepin.com.gtja.fuyi \
+		deepin.com.qq.b.crm \
+		deepin.com.qq.b.eim \
+		deepin.com.qq.im \
+		deepin.com.qq.im.light \
+		deepin.com.qq.office \
+		deepin.com.qq.rtx2015 \
+		deepin.com.taobao.aliclient.qianniu \
+		deepin.com.taobao.wangwang \
+		deepin.com.thunderspeed \
+		deepin.com.wechat \
+		deepin.com.weixin.work \
+		deepin.net.263.em \
+		deepin.org.7-zip \
+		deepin.org.foobar2000
 
 $(REPO)/Packages: $(BUILD)/debian-stable.trans $(BUILD)/debian-testing.trans $(BUILD)/ubuntu-bionic.trans $(BUILD)/ubuntu-focal.trans
 	mkdir -p $(REPO)/ $(REPO)/deepin_mirror

@@ -3,8 +3,7 @@ import shutil
 import urllib.request
 import urllib.error
 import argparse
-import queue
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 
@@ -41,28 +40,14 @@ def main():
     parser.add_argument('-f', '--file', nargs='+', action='append', default=[])
     args = parser.parse_args()
 
-    tasks = queue.Queue()
-    for filename, *remote_url in args.file:
-        if remote_url:
-            remote_url = remote_url[0]
-        else:
-            remote_url = args.template.format(*filename.split(args.separator))
-        local_path = os.path.join(args.directory, filename)
-        tasks.put((local_path, remote_url, args.verbose))
-
-    def run():
-        while True:
-            try:
-                fetch(*tasks.get(block=False))
-            except queue.Empty:
-                break
-
-    workers = [threading.Thread(target=run) for _ in range(min(args.jobs, len(args.file)))]
-    for w in workers:
-        w.start()
-    for w in workers:
-        w.join()
-
+    with ThreadPoolExecutor(min(args.jobs, len(args.file))) as executor:
+        for filename, *remote_url in args.file:
+            if remote_url:
+                remote_url = remote_url[0]
+            else:
+                remote_url = args.template.format(*filename.split(args.separator))
+            local_path = os.path.join(args.directory, filename)
+            executor.submit(fetch, local_path, remote_url, args.verbose)
 
 if __name__ == '__main__':
     main()
