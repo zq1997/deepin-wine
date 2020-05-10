@@ -27,46 +27,50 @@ def filter_packages(packages, _):
 
 
 class Repository:
-    def __init__(self, filepath):
-        self.filepath = filepath
+    def __init__(self, path_file):
+        with open(path_file) as f:
+            self.files = map(open, f.read().split())
         self.packages = {}
 
     def __enter__(self):
-        self.f = open(self.filepath, 'rt')
-
         name = None
         seek_pos = 0
         line_count = 0
-        while True:
-            line = self.f.readline()
-            if not line:
-                break
-            elif line.isspace():
-                if name is not None:
-                    location = (seek_pos, line_count)
-                    if name in self.packages:
-                        self.packages[name].append(location)
-                    else:
-                        self.packages[name] = [location]
-                    name = None
-                seek_pos = self.f.tell()
-                line_count = 0
-            else:
-                if name is None:
-                    key, value = line.split(':', 1)
-                    assert key.strip().lower() == 'package'
-                    name = value.strip()
-                line_count += 1
+        for f in self.files:
+            while True:
+                line = f.readline()
+                if not line or line.isspace():
+                    if name is not None:
+                        location = (f, seek_pos, line_count)
+                        if name in self.packages:
+                            self.packages[name].append(location)
+                        else:
+                            self.packages[name] = [location]
+                        name = None
+                    if not line:
+                        break
+                    seek_pos = f.tell()
+                    line_count = 0
+                else:
+                    line_count += 1
+                    if name is None and not line[0].isspace() and line[0] != '#':
+                        key, value = line.split(':', 1)
+                        if key.rstrip().lower() == 'package':
+                            name = value.strip()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.f.close()
+        for f in self.files:
+            f.close()
 
     def __getitem__(self, name):
         packages = []
-        for seek_start, line_count in self.packages.get(name, []):
-            self.f.seek(seek_start)
-            control = ''.join(self.f.readline() for _ in range(line_count))
+        for f, seek_start, line_count in self.packages.get(name, []):
+            f.seek(seek_start)
+            lines = [f.readline() for _ in range(line_count)]
+            if lines[-1][-1] != '\n':
+                lines[-1] += '\n'
+            control = ''.join(filter(lambda s: not s.startswith('#'), lines))
             packages.append(Package(control))
         return packages
 
