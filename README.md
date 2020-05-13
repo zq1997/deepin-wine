@@ -1,27 +1,27 @@
 # deepin-wine
 
-> deepin-wine环境与应用在Mint/Ubuntu/Debian上的移植仓库
+> deepin-wine环境与应用在Debian/Ubuntu上的移植仓库
 >
 > 使用deepin官方原版软件包
 >
-> 安装QQ只需要`apt-get install`这么简单
+> 安装QQ/微信只需要两条命令
 
-## 关于V2
+## 关于V2（老用户看这里）
 
-**deepin-wine**移植仓库现已升级为**V2**版本，兼容更多发行版。
+**deepin-wine**移植仓库现（2010/05/03）已升级为**V2**版本，兼容更多发行版。
 
-**V1**仓库源现在依然可以使用，但将来会择期关闭。运行如下命令可以从**V1**升级到**V2**。
+旧版现在依然可以使用，但将来会择期关闭，运行如下命令可以从**V1**升级到**V2**。
 
 ```sh
 sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg
 wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 ```
 
-## 快速开始
+## 快速开始（新用户看这里）
 
 1. 添加仓库
 
-   运行如下一行命令即可
+   首次使用时，你需要运行如下一条命令将移植仓库添加到系统中。
 
    ```sh
    wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
@@ -29,15 +29,15 @@ wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 
 2. 应用安装
 
-   现在，你可以像对待普通的软件包一样，使用`apt-get`系列命令进行各个deepin-wine应用安装、更新、卸载和依赖清理了。
+   自此以后，你可以像对待普通的软件包一样，使用`apt-get`系列命令进行各种应用安装、更新和卸载清理了。
 
-   比如安装TIM只需要运行下面的命令，
+   比如安装微信只需要运行下面的命令，
 
    ```sh
-   sudo apt-get install deepin.com.qq.office
+   sudo apt-get install deepin.com.wechat
    ```
 
-   常用应用的软件包名如下：
+   将`deepin.com.wechat`替换为下列包名，可以继续安装其他应用：
 
    |    应用    |          包名           |
    | :--------: | :---------------------: |
@@ -49,7 +49,7 @@ wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
    | 迅雷极速版 | deepin.com.thunderspeed |
    |   WinRAR   |  deepin.cn.com.winrar   |
 
-   当然还有一些其他的应用，不全部列出。
+   当然还有一些其他的应用，不逐一列出。
 
 ## 添加仓库过程详解
 
@@ -114,12 +114,16 @@ wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
    sudo apt-get update
    ```
    
-   这会把一切恢复到最初初始的状态。
+   这会把一切恢复到最初始的状态。
+
+## 移植原理
+
+deepin把QQ/微信之类的deepin wine应用打包放在了deepin仓库中，因此先提取出这些应用及依赖的软件包，再减去Debian/Ubuntu等发行版官方仓库中固有的软件包，就可以打包成一个移植于对应发行版的“差量仓库”。
 
 ## 版权相关
 
-这个git仓库中的代码只包括了移植版软件仓库的构建工具，最后仓库中软件包的下载地址会被301重定向到deepin的官方仓库（及镜像）中去，其版权由[deepin](https://www.deepin.com/)所有。
+这个git仓库中的代码只包括了移植版软件仓库的构建工具，最后仓库中软件包的下载地址会被301重定向到deepin的官方仓库（或者镜像）中去，其版权由 [deepin](https://www.deepin.com/) 所有。
 
 ## 感谢
 
-本工作是参考了**wszqkzqk**的[deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu)工作，在此基础上进行了高更一层的包装，让使用变得方便一点。同时，此项目的兼容wszqkzqk的项目，已经按照wszqkzqk项目安装好后，依然可以再按此项目进行配置，可以更方便地进行后续管理。
+本项目受 [wszqkzqk/deepin-wine-ubuntu](https://github.com/wszqkzqk/deepin-wine-ubuntu) 项目启发，改进了一下安装方式，因此兼容原项目，已经按照deepin-wine-ubuntu项目安装好后，依然可以再按此项目进行配置，可以更方便地进行后续更新。

@@ -9,8 +9,10 @@ dev: all
 clean:
 	rm -rf $(BUILD) $(REPO)
 
-.PRECIOUS: $(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages
-$(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages: $(if $(filter dev,$(MAKECMDGOALS)), , force)
+.PRECIOUS: $(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages \
+		$(BUILD)/%/Packages.unxz $(BUILD)/%/Packages.ungz
+
+$(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages: $(if $(filter dev,$(MAKECMDGOALS)),,force)
 	wget -nv -N -P $(BUILD) -x --protocol-directories $(shell echo $@ | sed -E 's~^$(BUILD)/([^/]+)/~\1://~')
 
 $(BUILD)/%/Packages.unxz: $(BUILD)/%/Packages.xz
@@ -19,39 +21,41 @@ $(BUILD)/%/Packages.unxz: $(BUILD)/%/Packages.xz
 $(BUILD)/%/Packages.ungz: $(BUILD)/%/Packages.gz
 	gzip -cd $< >$@
 
-TUNA_MIRROR := $(BUILD)/https/mirrors.tuna.tsinghua.edu.cn
+$(REPO)/setup.sh: setup.sh
+	mkdir -p $(REPO)
+	cp $< $@
 
-$(BUILD)/deepin.pkg: \
-		$(TUNA_MIRROR)/deepin/dists/stable/main/binary-i386/Packages.ungz \
-		$(TUNA_MIRROR)/deepin/dists/stable/main/binary-amd64/Packages.ungz \
-		$(TUNA_MIRROR)/deepin/dists/stable/non-free/binary-i386/Packages.ungz
+$(REPO)/Packages: \
+		$(BUILD)/debian-stable.trans\
+		$(BUILD)/debian-testing.trans\
+		$(BUILD)/ubuntu-bionic.trans\
+		$(BUILD)/ubuntu-focal.trans
+	mkdir -p $(REPO) $(REPO)/deepin_mirror
+	python3 transplant.py -o $@ merge $+
 
-$(BUILD)/debian-stable.pkg: \
-		$(TUNA_MIRROR)/debian/dists/stable/main/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/debian/dists/stable/main/binary-amd64/Packages.unxz
+$(REPO)/Packages.gz: $(REPO)/Packages
+	gzip -nc9 $< >$@
 
-$(BUILD)/debian-testing.pkg: \
-		$(TUNA_MIRROR)/debian/dists/testing/main/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/debian/dists/testing/main/binary-amd64/Packages.unxz
+$(REPO)/Release: $(REPO)/Packages $(REPO)/Packages.gz
+	apt-ftparchive release -o APT::FTPArchive::Release::Label=deepin-wine $(REPO) >$@
 
-$(BUILD)/ubuntu-bionic.pkg: \
-		$(TUNA_MIRROR)/ubuntu/dists/bionic/main/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/bionic/main/binary-amd64/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/bionic/universe/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/bionic/universe/binary-amd64/Packages.unxz
+MIRROR = $(BUILD)/https/mirrors.tuna.tsinghua.edu.cn/$(1)/dists/$(2)/$(3)/binary-$(4)/Packages$(5)
+PACKAGES/deepin := \
+		$(call MIRROR,deepin,stable,main,i386,.ungz) \
+		$(call MIRROR,deepin,stable,main,amd64,.ungz) \
+		$(call MIRROR,deepin,stable,non-free,i386,.ungz)
+PACKAGES/debian-stable := \
+		$(call MIRROR,debian,stable,main,i386,.unxz)
+PACKAGES/debian-testing := \
+		$(call MIRROR,debian,testing,main,i386,.unxz)
+PACKAGES/ubuntu-bionic := \
+		$(call MIRROR,ubuntu,bionic,main,i386,.unxz) \
+		$(call MIRROR,ubuntu,bionic,universe,i386,.unxz)
+PACKAGES/ubuntu-focal := \
+		$(call MIRROR,ubuntu,focal,main,i386,.unxz) \
+		$(call MIRROR,ubuntu,focal,universe,i386,.unxz)
 
-$(BUILD)/ubuntu-focal.pkg: \
-		$(TUNA_MIRROR)/ubuntu/dists/focal/main/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/focal/main/binary-amd64/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/focal/universe/binary-i386/Packages.unxz \
-		$(TUNA_MIRROR)/ubuntu/dists/focal/universe/binary-amd64/Packages.unxz
-
-$(BUILD)/%.pkg:
-	echo $+ | sed 's/ /\n/g' >$@
-
-$(BUILD)/%.trans: $(BUILD)/deepin.pkg $(BUILD)/%.pkg
-	@echo $+ '->' $@
-	@python3 transplant.py -o $@ transplant -s $< -t $(lastword $+) \
+APPS := \
 		deepin.cn.360.yasuo \
 		deepin.cn.com.winrar \
 		deepin.com.95579.cjsc \
@@ -75,21 +79,7 @@ $(BUILD)/%.trans: $(BUILD)/deepin.pkg $(BUILD)/%.pkg
 		deepin.org.7-zip \
 		deepin.org.foobar2000
 
-$(REPO)/Packages: \
-		$(BUILD)/debian-stable.trans\
-		$(BUILD)/debian-testing.trans\
-		$(BUILD)/ubuntu-bionic.trans\
-		$(BUILD)/ubuntu-focal.trans
-	mkdir -p $(REPO) $(REPO)/deepin_mirror
-	python3 transplant.py -o $@ merge $+
-	grep -iP '^(Package|Version|Architecture)\s*:|^$$' $@ > $(BUILD)/summary
-
-$(REPO)/Packages.gz: $(REPO)/Packages
-	gzip -nc9 $< >$@
-
-$(REPO)/Release: $(REPO)/Packages $(REPO)/Packages.gz
-	apt-ftparchive release -o APT::FTPArchive::Release::Label=deepin-wine $(REPO) >$@
-
-$(REPO)/setup.sh: setup.sh
-	mkdir -p $(REPO)
-	cp $< $@
+.SECONDEXPANSION:
+$(BUILD)/%.trans: $(PACKAGES/deepin) $$(PACKAGES/$$*)
+	@echo 'making $@...'
+	@python3 transplant.py -o $@ transplant -s $(PACKAGES/deepin) -t $(PACKAGES/$*) -- $(APPS)

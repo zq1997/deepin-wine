@@ -27,9 +27,8 @@ def filter_packages(packages, _):
 
 
 class Repository:
-    def __init__(self, path_file):
-        with open(path_file) as f:
-            self.files = map(open, f.read().split())
+    def __init__(self, paths):
+        self.files = map(open, paths)
         self.packages = {}
 
     def __enter__(self):
@@ -122,6 +121,18 @@ def transplant(source, target, app_selectors):
     return unmet_chains, transplanted_packages
 
 
+def write_if_updated(file, text):
+    if os.path.isfile(file):
+        with open(file, 'rb') as f:
+            old_text = f.read()
+    else:
+        old_text = None
+    text = text.encode()
+    if text != old_text:
+        with open(file, 'wb') as f:
+            f.write(text)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', required=True)
@@ -129,8 +140,8 @@ def main():
     subparsers.required = True
 
     parser_transplant = subparsers.add_parser('transplant')
-    parser_transplant.add_argument('-s', '--source', required=True)
-    parser_transplant.add_argument('-t', '--target', required=True)
+    parser_transplant.add_argument('-s', '--source', nargs='+')
+    parser_transplant.add_argument('-t', '--target', nargs='+')
     parser_transplant.add_argument('apps', nargs='+')
 
     parser_merge = subparsers.add_parser('merge')
@@ -139,23 +150,23 @@ def main():
     args = parser.parse_args()
 
     try:
-        with open(args.output, 'wt') as output:
-            if args.action == 'transplant':
-                with Repository(args.source) as source, Repository(args.target) as target:
-                    unmet_chains, transplanted_packages = transplant(source, target, args.apps)
-                    if unmet_chains:
-                        raise Exception('未解决依赖\n' + '\n'.join(unmet_chains))
-                    else:
-                        output.write('\n'.join(transplanted_packages))
-            elif args.action == 'merge':
-                packages = set()
-                for file in args.package_files:
-                    with open(file) as f:
-                        packages.update(re.findall(r'(?:.+\n)+', f.read()))
-                output.write('\n'.join(sorted(packages)))
-    except Exception as e:
-        os.remove(args.output)
-        raise e
+        if args.action == 'transplant':
+            with Repository(args.source) as source, Repository(args.target) as target:
+                unmet_chains, packages = transplant(source, target, args.apps)
+                if unmet_chains:
+                    raise Exception('未解决依赖\n' + '\n'.join(unmet_chains))
+        elif args.action == 'merge':
+            packages = set()
+            for file in args.package_files:
+                with open(file) as f:
+                    packages.update(re.findall(r'(?:.+\n)+', f.read()))
+            packages = sorted(sorted(packages))
+        else:
+            raise Exception('未识别动作:', args.action)
+    except Exception:
+        raise
+    else:
+        write_if_updated(args.output, '\n'.join(packages))
 
 
 if __name__ == '__main__':
