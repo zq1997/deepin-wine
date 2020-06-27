@@ -9,7 +9,7 @@ class Package:
         self.visited = False
 
     def _search_key(self, key):
-        pattern = rf'(^{re.escape(key)} *: *)(.+(?:\n .+)*)'.replace(' ', r'[^\S\n]')
+        pattern = r'(^KEY *: *)(.+(?:\n .+)*)'.replace('KEY', re.escape(key)).replace(' ', r'[^\S\n]')
         return re.search(pattern, self.control, re.I | re.M)
 
     def __setitem__(self, key, value):

@@ -8,13 +8,12 @@
 
 ## 关于V2（老用户看这里）
 
-**deepin-wine**移植仓库现（2010/05/03）已升级为**V2**版本，兼容更多发行版。
+**deepin-wine**移植仓库现（2020/05/03）已升级为**V2**版本，运行更快且兼容更多发行版。
 
-旧版现在依然可以使用，但将来会择期关闭，运行如下命令可以从**V1**升级到**V2**。
+现在旧版执行`apt-get update`时会产生一些报错，运行下面的命令即可完成升级。
 
 ```sh
-sudo rm /etc/apt/trusted.gpg.d/i-m.dev.gpg
-wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
+sudo rm -f /etc/apt/trusted.gpg.d/i-m.dev.gpg && wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 ```
 
 ## 快速开始（新用户看这里）
