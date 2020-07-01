@@ -75,9 +75,13 @@ APPS := \
 		deepin.com.thunderspeed \
 		deepin.com.wechat \
 		deepin.com.weixin.work \
+		deepin.com.wechat.devtools \
 		deepin.net.263.em \
+		deepin.net.cnki.cajviewer \
 		deepin.org.7-zip \
-		deepin.org.foobar2000
+		deepin.org.foobar2000 \
+		deepinwine-cmbchina \
+		deepinwine-picasa
 
 .SECONDEXPANSION:
 $(BUILD)/%.trans: $(PACKAGES/deepin) $$(PACKAGES/$$*)
