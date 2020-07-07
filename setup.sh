@@ -8,6 +8,7 @@ if ! echo "$ARCHITECTURE" | grep -qE 'amd64|i386'; then
     return 1
 fi
 echo "$ARCHITECTURE" | grep -qE 'i386' || sudo dpkg --add-architecture i386
+sudo apt-get update
 
 LIST_FILE="/etc/apt/sources.list.d/deepin-wine.i-m.dev.list"
 # 添加软件源
