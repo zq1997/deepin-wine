@@ -13,7 +13,9 @@
 现在旧版执行`apt-get update`时会产生一些报错，运行下面的命令即可完成升级。
 
 ```sh
-sudo rm -f /etc/apt/trusted.gpg.d/i-m.dev.gpg && wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
+sudo rm -f /etc/apt/trusted.gpg.d/i-m.dev.gpg \
+        /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
+wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 ```
 
 ## 快速开始（新用户看这里）
@@ -109,7 +111,8 @@ sudo rm -f /etc/apt/trusted.gpg.d/i-m.dev.gpg && wget -O- https://deepin-wine.i-
 4. 移除软件仓库
 
    ```sh
-   sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
+   sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref \
+           /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
    sudo apt-get update
    ```
    
