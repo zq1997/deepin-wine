@@ -65,13 +65,19 @@
 
 ## 常见问题
 
-### 中文字体显示问题
+### 字体相关问题
 
-简单来说就是deepin-wine并不能完美地利用系统中已有的字体和字体配置。因此很多情况下会导致中文显示为框框，也可能导致中文显示为日文字形（显然是没有正确处理CJK变体）。
+新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。
 
-如果你在执行`setup.sh`脚本时按照提示安装了文泉驿微米黑字体，一般不会有大问题。
+不过要记得系统语言环境设置为中文，不想把系统全局设置为中文的话可以在对应的`.desktop`文件中为启动命令赋予`LC_ALL="*zh_CN*.UTF-8"`环境变量（自行百度方法）。
 
-更多情况，可以参考[字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)。
+另外，如若你复制了整个Windows下的字体到Linux下来，或者用其他途径安装过宋体字，现在会导致TIM等应用卡死，参考[deepin论坛的帖子](https://bbs.deepin.org/forum.php?mod=viewthread&tid=200329)，解决方案，就是把`~/.deepinwine/????/drive_c/windows/Fonts`改成一个指向字体文件夹的软链接。如果你还是不懂，那么直接运行下面这条命令：
+
+```sh
+for dir in ~/.deepinwine/*/drive_c/windows/Fonts; do rmdir $dir; ln -s /usr/share/fonts $dir; done
+```
+
+[字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)讨论的是以前的版本，谨慎参考。
 
 ### QQ/微信托盘小图标显示异常
 
