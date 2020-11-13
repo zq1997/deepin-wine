@@ -1,7 +1,7 @@
 REPO ?= repo
 BUILD ?= build
 
-.PHONY: all dev clean clean-download
+.PHONY: all dev clean clean-download netlify
 
 all: $(REPO)/Release $(REPO)/setup.sh
 dev: all
@@ -12,11 +12,18 @@ clean:
 clean-download:
 	rm -rf $(BUILD)/https
 
+netlify:
+	apt-get download apt-utils
+	dpkg-deb -xv apt-utils_*.deb packages
+	PATH=$${PATH}:packages/usr/bin $(MAKE) -j all
+	echo '/https/* https://:splat 301!' > $(REPO)/_redirects
+	echo '/ https://github.com/zq1997/deepin-wine 301' >> $(REPO)/_redirects
+
 .PRECIOUS: $(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages \
 		$(BUILD)/%/Packages.unxz $(BUILD)/%/Packages.ungz
 
 %/:
-	mkdir $@
+	mkdir -p $@
 
 $(BUILD)/%/Packages.gz $(BUILD)/%/Packages.xz $(BUILD)/%/Packages:
 	@wget -nv -N -P $(BUILD) -x --protocol-directories $(shell echo $@ | sed -E 's~^$(BUILD)/([^/]+)/~\1://~')
@@ -35,7 +42,8 @@ $(REPO)/Packages: \
 		$(BUILD)/debian-testing.trans\
 		$(BUILD)/ubuntu-bionic.trans\
 		$(BUILD)/ubuntu-focal.trans\
-		| $(REPO)/ $(REPO)/deepin_mirror/
+		$(BUILD)/ubuntu-groovy.trans\
+		| $(REPO)/
 	python3 transplant.py -o $@ merge $+
 
 $(REPO)/Packages.gz: $(REPO)/Packages
@@ -49,7 +57,12 @@ TUNA_MIRROR = $(BUILD)/https/mirrors.tuna.tsinghua.edu.cn/$(1)/dists/$(2)/$(3)/b
 PACKAGES/deepin := \
 		$(call DEEPIN_MIRROR,main,i386,.ungz) \
 		$(call DEEPIN_MIRROR,main,amd64,.ungz) \
-		$(call DEEPIN_MIRROR,non-free,i386,.ungz)
+		$(call DEEPIN_MIRROR,non-free,i386,.ungz) \
+		$(call DEEPIN_MIRROR,non-free,amd64,.ungz) \
+		$(call DEEPIN_MIRROR,contrib,i386,.ungz) \
+		$(call DEEPIN_MIRROR,contrib,amd64,.ungz) \
+		$(BUILD)/https/community-store-packages.deepin.com/appstore/dists/eagle/appstore/binary-i386/Packages.ungz \
+		$(BUILD)/https/community-store-packages.deepin.com/appstore/dists/eagle/appstore/binary-amd64/Packages.ungz
 PACKAGES/debian-stable := \
 		$(call TUNA_MIRROR,debian,stable,main,i386,.unxz)
 PACKAGES/debian-testing := \
@@ -60,30 +73,24 @@ PACKAGES/ubuntu-bionic := \
 PACKAGES/ubuntu-focal := \
 		$(call TUNA_MIRROR,ubuntu,focal,main,i386,.unxz) \
 		$(call TUNA_MIRROR,ubuntu,focal,universe,i386,.unxz)
+PACKAGES/ubuntu-groovy := \
+		$(call TUNA_MIRROR,ubuntu,groovy,main,i386,.unxz) \
+		$(call TUNA_MIRROR,ubuntu,groovy,universe,i386,.unxz)
 
 APPS := \
-		deepin.cn.360.yasuo \
-		deepin.cn.com.winrar \
-		deepin.com.95579.cjsc \
-		deepin.com.aaa-logo \
-		deepin.com.baidu.pan \
-		deepin.com.cmbchina \
-		deepin.com.foxmail \
-		deepin.com.gtja.fuyi \
-		deepin.com.qq.b.crm \
-		deepin.com.qq.b.eim \
-		deepin.com.qq.im \
-		deepin.com.qq.im.light \
-		deepin.com.qq.office \
-		deepin.com.qq.rtx2015 \
-		deepin.com.taobao.aliclient.qianniu \
-		deepin.com.taobao.wangwang \
-		deepin.com.thunderspeed \
-		deepin.com.wechat \
-		deepin.com.weixin.work \
-		deepin.net.263.em \
-		deepin.org.7-zip \
-		deepin.org.foobar2000
+        com.dingtalk.deepin \
+        com.foxmail.deepin \
+        com.freepiano.deepin \
+        com.iqiyi.deepin \
+        com.meituxiuxiu.deepin \
+        com.qq.im.deepin \
+        com.qq.music.deepin \
+        com.qq.video.deepin \
+        com.qq.weixin.deepin \
+        com.qq.weixin.work.deepin \
+        com.taobao.aliclient.qianniu.deepin \
+        com.taobao.wangwang.deepin \
+        com.utau.deepin \
 
 .SECONDEXPANSION:
 $(BUILD)/%.trans: $(PACKAGES/deepin) $$(PACKAGES/$$*)

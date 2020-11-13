@@ -16,13 +16,9 @@
 
 [卸载清理](#卸载清理)
 
-[应用更新](#应用更新)
-
 [高级文档](#高级文档)
 
 [版权与致谢](#版权与致谢)
-
-
 
 
 
@@ -43,39 +39,38 @@
    比如安装微信只需要运行下面的命令，
 
    ```sh
-   sudo apt-get install deepin.com.wechat
+   sudo apt-get install com.qq.weixin.deepin
    ```
 
-   将`deepin.com.wechat`替换为下列包名，可以继续安装其他应用：
+   将`com.qq.weixin.deepin`替换为下列包名，可以继续安装其他应用：
 
-   |    应用    |          包名           |
-   | :--------: | :---------------------: |
-   |    TIM     |  deepin.com.qq.office   |
-   |     QQ     |    deepin.com.qq.im     |
-   |  QQ轻聊版  | deepin.com.qq.im.light  |
-   |    微信    |    deepin.com.wechat    |
-   |  百度网盘  |  deepin.com.baidu.pan   |
-   |   WinRAR   |  deepin.cn.com.winrar   |
-
-   当然还有更多应用，就不逐一列出。因为这些软件包名基本都以`deepin.`开头，所以只需在命令行输入`sudo apt-get install deepin.`然后双击`TAB`键，自会有提示。
-
-
+   |   应用   |            包名            |
+   | :------: | :------------------------: |
+   |   微信   |    com.qq.weixin.deepin    |
+   |    QQ    |      com.qq.im.deepin      |
+   |   钉钉   |    com.dingtalk.deepin     |
+   | 阿里旺旺 | com.taobao.wangwang.deepin |
+   |  QQ音乐  |    com.qq.music.deepin     |
+   |  QQ视频  |    com.qq.video.deepin     |
+   |  爱奇艺  |      com.iqiyi.deepin      |
+   
+   **Deepin现在还没有兼容TIM，请等待官方升级，官方升级了可以发issue提醒我迁移。**
+   
+   当然还有更多应用，就不逐一列出，自行搜索尝试，反正和deepin官方仓库里的包名一模一样。
 
 
 
 ## 常见问题
 
+### 没有应用图标
+
+注销！注销！注销！
+
+注销不懂？重启会吗！
+
 ### 字体相关问题
 
 新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。
-
-不过要记得系统语言环境设置为中文，不想把系统全局设置为中文的话可以在对应的`.desktop`文件中为启动命令赋予`LC_ALL="*zh_CN*.UTF-8"`环境变量（自行百度方法）。
-
-另外，如若你复制了整个Windows下的字体到Linux下来，或者用其他途径安装过宋体字，现在会导致TIM等应用卡死，参考[deepin论坛的帖子](https://bbs.deepin.org/forum.php?mod=viewthread&tid=200329)，解决方案，就是把`~/.deepinwine/????/drive_c/windows/Fonts`改成一个指向字体文件夹的软链接。如果你还是不懂，那么直接运行下面这条命令：
-
-```sh
-for dir in ~/.deepinwine/*/drive_c/windows/Fonts; do rmdir $dir; ln -s /usr/share/fonts $dir; done
-```
 
 [字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)讨论的是以前的版本，谨慎参考。
 
@@ -104,16 +99,6 @@ for dir in ~/.deepinwine/*/drive_c/windows/Fonts; do rmdir $dir; ln -s /usr/shar
 ### 微信启动后屏幕上有个黑框
 
 见[讨论区](https://github.com/zq1997/deepin-wine/issues/24)。
-
-### 我好早之前配置了这个仓库，现在执行apt-get update有一些异常
-
-本仓库在2020/05/03升级了一下，运行更快且兼容更多发行版，但没有办法兼容以前的仓库配置了，运行下面的命令重新配置即可。
-
-```sh
-sudo rm -f /etc/apt/trusted.gpg.d/i-m.dev.gpg \
-        /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
-wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
-```
 
 ### 没办法进行QQ远程/视频通话
 
@@ -153,7 +138,9 @@ wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 
 ## 卸载清理
 
-卸载与清理按照层次从浅到深可以分为如下四个层级，
+卸载与清理按照层次从浅到深可以分为如下四个层级。
+
+如果只是想清除APP账户配置啥的那么请按照`1`清理；如果你发现程序奔溃之类的，请按照`1-2`清理；如果需要卸载APP，按照`1-2-3`清理；如果你想把一切回到最初的起点，执行`1-2-3-4`清理。
 
 1. 清理应用运行时目录
 
@@ -165,47 +152,16 @@ wget -O- https://deepin-wine.i-m.dev/setup.sh | sh
 
 3. 卸载软件包
 
-   执行`sudo apt-get purge --autoremove deepin.xxxxx`命令即可。
+   执行`sudo apt-get purge --autoremove <包名>`命令把你安装过的包给移除。
 
 4. 移除软件仓库
 
    ```sh
    sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref \
-           /etc/apt/sources.list.d/deepin-wine.i-m.dev.list
+           /etc/apt/sources.list.d/deepin-wine.i-m.dev.list \
+           /etc/profile.d/deepin-wine.i-m.dev.sh
    sudo apt-get update
    ```
-
-
-
-
-
-## 应用更新
-
-Deepin他们的软件包更新的很慢，QQ微信什么的软件包都是可能比腾讯官方的安装包落后了一年。
-
-这时候你可以自行手动更新一下，以微信为例：
-
-1. 去[腾讯官网](https://pc.weixin.qq.com/)下载最新的微信安装包EXE文件。
-
-2. 打开命令行执行：
-
-   ```sh
-   WINEPREFIX=~/.deepinwine/Deepin-WeChat/ deepin-wine <EXE路径，如~/Downloads/WeChatSetup.exe>
-   ```
-
-而如果是TIM的话，那就
-
-1. 还是去[腾讯官网](https://tim.qq.com/download.html)下载安装包EXE。
-
-2. 执行下面的命令：
-
-   ```sh
-   WINEPREFIX=~/.deepinwine/Deepin-TIM/ deepin-wine <EXE路径，如~/Downloads/TIM3.1.0.21789.exe>
-   ```
-
-   TIM的安装程序显示可能有些异常（黑白块），别理它，能用。
-
-其他软件也是同理，只需要注意`WINEPREFIX`选择正确的路径即可（自己查看`~/.deepinwine/`下有哪些文件夹，按名称猜）。另外注意安装到默认位置，别改。
 
 
 
@@ -254,7 +210,17 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
    Pin-Priority: 200
    ```
 
-4. 刷新软件源
+4. 添加XDG_DATA_DIRS配置
+
+   这是为了让应用图标能正常显示，创建`/etc/profile.d/deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
+
+   ```sh
+   for deepin_dir in /opt/apps/*/entries; do
+       export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+   done
+   ```
+
+5. 刷新软件源
 
    ```sh
    sudo apt-get update

@@ -4,8 +4,9 @@ import re
 
 
 class Package:
-    def __init__(self, control):
+    def __init__(self, control, repo_path):
         self.control = control
+        self.repo_path = repo_path
         self.visited = False
 
     def _search_key(self, key):
@@ -33,6 +34,7 @@ class Repository:
 
     def __enter__(self):
         name = None
+        provides = []
         seek_pos = 0
         line_count = 0
         for f in self.files:
@@ -45,17 +47,24 @@ class Repository:
                             self.packages[name].append(location)
                         else:
                             self.packages[name] = [location]
+                        for provide in provides:
+                            self.packages[provide] = [location]
                         name = None
+                        provides = []
                     if not line:
                         break
                     seek_pos = f.tell()
                     line_count = 0
                 else:
                     line_count += 1
-                    if name is None and not line[0].isspace() and line[0] != '#':
+                    if not line[0].isspace() and line[0] != '#':
                         key, value = line.split(':', 1)
-                        if key.rstrip().lower() == 'package':
+                        key = key.rstrip().lower()
+                        if key == 'package':
                             name = value.strip()
+                        elif key == 'provides':
+                            provides = [s.split()[0] for s in value.split(',')]
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -70,7 +79,7 @@ class Repository:
             if lines[-1][-1] != '\n':
                 lines[-1] += '\n'
             control = ''.join(filter(lambda s: not s.startswith('#'), lines))
-            packages.append(Package(control))
+            packages.append(Package(control, f.name))
         return packages
 
     def __contains__(self, name):
@@ -95,12 +104,12 @@ def transplant(source, target, app_selectors):
 
         found = False
         selector_unmet = []
-        for pkg in filter_packages(packages, _):
+        for pkg in packages:
             if pkg.visited:
                 found = True
                 continue
             pkg.visited = True
-            pkg['Filename'] = 'deepin_mirror/' + pkg['Filename']
+            pkg['Filename'] = re.search(r'(?<=^build/).+/(?=dists/)', pkg.repo_path).group() + pkg['Filename']
 
             and_satisfied = True
             for and_dep in filter(len, map(str.strip, (pkg['Depends'] or '').split(','))):
