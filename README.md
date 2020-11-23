@@ -212,11 +212,13 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
 
 4. 添加XDG_DATA_DIRS配置
 
-   这是为了让应用图标能正常显示，创建`/etc/profile.d/deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
+   这是为了让应用图标能正常显示，创建`/etc/profile.d/99-deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
 
    ```sh
    for deepin_dir in /opt/apps/*/entries; do
-       export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+       if [ -d "$deepin_dir/applications" ]; then
+           export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+       fi
    done
    ```
 

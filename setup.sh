@@ -25,10 +25,12 @@ Pin-Priority: 200
 EOF
 
 # 添加XDG_DATA_DIRS配置，使得应用图标能正常显示
-# Linux Mint 20 cinnamon，文件名前面加个z前缀，最后加载
-sudo tee "/etc/profile.d/z-deepin-wine.i-m.dev.sh" >/dev/null << "EOF"
+# 文件应以最低优先级最后加载
+sudo tee "/etc/profile.d/99-deepin-wine.i-m.dev.sh" >/dev/null << "EOF"
 for deepin_dir in /opt/apps/*/entries; do
-    export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+    if [ -d "$deepin_dir/applications" ]; then
+        export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+    fi
 done
 EOF
 
@@ -36,10 +38,10 @@ EOF
 sudo apt-get update --no-list-cleanup -o Dir::Etc::sourcelist="$LIST_FILE" -o Dir::Etc::sourceparts="-"
 
 printf "
-\033[32m大功告成，现在可以试试安装deepin-wine软件了，如：
-安装/更新微信：sudo apt-get install com.qq.weixin.deepin
-安装/更新QQ：sudo apt-get install com.qq.im.deepin
-安装/更新钉钉：sudo apt-get install com.dingtalk.deepin
+\033[32m大功告成，现在可以试试安装更新deepin-wine软件了，如：
+微信：sudo apt-get install com.qq.weixin.deepin
+QQ：sudo apt-get install com.qq.im.deepin
+钉钉：sudo apt-get install com.dingtalk.deepin
 \033[33;1m由于新版变化，安装完成后需要注销重登录才能正常显示应用图标。
 \033[36m如果觉得有用，请到 https://github.com/zq1997/deepin-wine 点个star吧。
 \033[0m"
