@@ -53,9 +53,9 @@
    |  QQ音乐  |    com.qq.music.deepin     |
    |  QQ视频  |    com.qq.video.deepin     |
    |  爱奇艺  |      com.iqiyi.deepin      |
-   
+
    **Deepin现在还没有兼容TIM，请等待官方升级，官方升级了可以发issue提醒我迁移。**
-   
+
    当然还有更多应用，就不逐一列出，自行搜索尝试，反正和deepin官方仓库里的包名一模一样。
 
 
@@ -212,14 +212,16 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
 
 4. 添加XDG_DATA_DIRS配置
 
-   这是为了让应用图标能正常显示，创建`/etc/profile.d/99-deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
+   这是为了让应用图标能正常显示，创建`/etc/profile.d/deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
 
    ```sh
+   XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
    for deepin_dir in /opt/apps/*/entries; do
-       if [ -d "$deepin_dir/applications" ]; then
-           export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
-       fi
+      if [ -d "$deepin_dir/applications" ]; then
+         XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+      fi
    done
+   export XDG_DATA_DIRS
    ```
 
 5. 刷新软件源

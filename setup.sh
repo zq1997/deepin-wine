@@ -25,13 +25,14 @@ Pin-Priority: 200
 EOF
 
 # 添加XDG_DATA_DIRS配置，使得应用图标能正常显示
-# 文件应以最低优先级最后加载
-sudo tee "/etc/profile.d/99-deepin-wine.i-m.dev.sh" >/dev/null << "EOF"
+sudo tee "/etc/profile.d/deepin-wine.i-m.dev.sh" >/dev/null << "EOF"
+XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
 for deepin_dir in /opt/apps/*/entries; do
     if [ -d "$deepin_dir/applications" ]; then
-        export XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
+        XDG_DATA_DIRS="$XDG_DATA_DIRS:$deepin_dir"
     fi
 done
+export XDG_DATA_DIRS
 EOF
 
 # 刷新软件源
