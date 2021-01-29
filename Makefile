@@ -91,6 +91,7 @@ APPS := \
         com.taobao.aliclient.qianniu.deepin \
         com.taobao.wangwang.deepin \
         com.utau.deepin \
+        cn.feishu.deepin \
 
 .SECONDEXPANSION:
 $(BUILD)/%.trans: $(PACKAGES/deepin) $$(PACKAGES/$$*)
