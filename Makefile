@@ -1,3 +1,4 @@
+
 REPO ?= repo
 BUILD ?= build
 
@@ -15,7 +16,7 @@ clean-download:
 netlify:
 	apt-get download apt-utils
 	dpkg-deb -xv apt-utils_*.deb packages
-	PATH=$${PATH}:packages/usr/bin $(MAKE) -j all
+	env PATH=$${PATH}:packages/usr/bin $(MAKE) -j all
 	echo '/https/* https://:splat 301!' > $(REPO)/_redirects
 	echo '/ https://github.com/zq1997/deepin-wine 301' >> $(REPO)/_redirects
 

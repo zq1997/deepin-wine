@@ -29,7 +29,7 @@ def filter_packages(packages, _):
 
 class Repository:
     def __init__(self, paths):
-        self.files = map(open, paths)
+        self.files = (open(p, 'rt', errors='ignore') for p in paths)
         self.packages = {}
 
     def __enter__(self):
