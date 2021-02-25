@@ -105,7 +105,7 @@ class Site:
             site.visited = set()
         else:
             site = self
-        site.file_list = [open(path, 'rt') for path in site.path_list]
+        site.file_list = [open(path, 'rt', errors='ignore') for path in site.path_list]
         return site
 
     def close(self):
@@ -139,6 +139,8 @@ class Site:
         return [] if ok else broken_chains
 
     def dump(self, index_list, f):
+        for x in self.path_list:
+            print(x)
         for index in index_list:
             i = index & 0xff
             offset = index >> 8

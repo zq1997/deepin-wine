@@ -1,9 +1,9 @@
 REPO ?= repo
 BUILD ?= build
 
-.PHONY: all netlify
+.PHONY: all packages netlify
 
-all: $(REPO)/Release $(REPO)/setup.sh
+all: packages $(REPO)/setup.sh
 
 netlify:
 	apt-get download apt-utils
@@ -12,15 +12,15 @@ netlify:
 	echo '/https/* https://:splat 301!' > $(REPO)/_redirects
 	echo '/ https://github.com/zq1997/deepin-wine 301' >> $(REPO)/_redirects
 
+packages: | $(REPO)/ $(BUILD)/
+	python3 make.py
+
 %/:
 	mkdir -p $@
 
 
 $(REPO)/setup.sh: setup.sh | $(REPO)/
 	cp $< $@
-
-$(REPO)/Packages: | $(REPO)/ $(BUILD)/
-	python3 make.py
 
 $(REPO)/Packages.gz: $(REPO)/Packages
 	gzip -nc9 $< >$@

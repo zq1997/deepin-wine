@@ -18,17 +18,24 @@ DOWNLOAD = False
 BUILD_DIR = './build'
 OUTPUT = './repo/Packages'
 
+
+MIRRORS = {
+    'deepin': 'https://community-packages.deepin.com/deepin',
+    'deepin-store': 'https://community-store-packages.deepin.com/appstore',
+    'debian': 'https://mirrors.tuna.tsinghua.edu.cn/debian',
+    'ubuntu': 'https://mirrors.tuna.tsinghua.edu.cn/ubuntu'
+}
 DEEPIN_SITE_SOURCE = '''
-    amd64 https://community-packages.deepin.com/deepin apricot main non-free
-    i386 https://community-packages.deepin.com/deepin apricot main non-free
-    i386 https://community-store-packages.deepin.com/appstore eagle appstore
+    deepin apricot main non-free i386
+    deepin apricot main non-free amd64
+    deepin-store eagle appstore i386
 '''
 SITE_SOURCES = {
-    'debian-stable': 'amd64 https://mirrors.tuna.tsinghua.edu.cn/debian stable main',
-    'debian-testing': 'amd64 https://mirrors.tuna.tsinghua.edu.cn/debian testing main',
-    'ubuntu-bionic': 'amd64 https://mirrors.tuna.tsinghua.edu.cn/ubuntu bionic main',
-    'ubuntu-focal': 'amd64 https://mirrors.tuna.tsinghua.edu.cn/ubuntu focal main',
-    'ubuntu-groovy': 'amd64 https://mirrors.tuna.tsinghua.edu.cn/ubuntu groovy main',
+    'debian-stable': 'debian stable main amd64',
+    'debian-testing': 'debian testing main amd64',
+    'ubuntu-bionic': 'ubuntu bionic main amd64',
+    'ubuntu-focal': 'ubuntu focal main amd64',
+    'ubuntu-groovy': 'ubuntu groovy main amd64'
 }
 
 CACHE = {}
@@ -40,8 +47,25 @@ def log(*args):
         print(*args)
 
 
-def download(url, size=None, sha256=None):
-    path = os.path.join(BUILD_DIR, parse.quote_plus(url))
+class DeleteOnError:
+    def __init__(self, path, *args, **kwargs):
+        self.path = path = os.path.relpath(path)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self.f = open(path, *args, **kwargs)
+
+    def __enter__(self):
+        self.f.__enter__()
+        return self.f
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.f.__exit__(exc_type, exc_val, exc_tb)
+        if exc_type is not None:
+            os.remove(self.path)
+
+
+def download(mirror, *paths, size=None, sha256=None):
+    url = '/'.join((MIRRORS[mirror], *paths))
+    path = os.path.join(BUILD_DIR, '/'.join((mirror, *paths)).replace('/', '#'))
     if os.path.exists(path):
         if not DOWNLOAD:
             return False, path
@@ -57,35 +81,34 @@ def download(url, size=None, sha256=None):
                     hasher.update(data)
                 if sha256 is not None and hasher.hexdigest().lower() == sha256:
                     return False, path
-    log('Downloading:', url)
-    with open(path, 'wb') as f:
-        with request.urlopen(url, timeout=10) as resp:
+    log('Downloading: %s\n\tto %s' % (url, path))
+    with DeleteOnError(path, 'wb') as f:
+        with request.urlopen(url, timeout=30) as resp:
             shutil.copyfileobj(resp, f)
         return True, path
 
 
-def get_release(url, dist):
-    _, path = download('%s/dists/%s/Release' % (url, dist))
+def get_release(mirror, dist):
+    _, path = download(mirror, 'dists', dist, 'Release')
     with open(path, 'rt') as f:
         release = f.read()
     return re.search(r'\nSHA256:\s*((?:\n\s+.+)+)', release).group(1)
 
 
-def get_packages(url, dist, path, size, sha256):
-    url = '%s/dists/%s/%s' % (url, dist, path)
-    updated, download_path = download(url, size, sha256)
+def get_packages(mirror, dist, path, size, sha256):
+    updated, download_path = download(mirror, 'dists', dist, path, size=size, sha256=sha256)
     file_path, ext = os.path.splitext(download_path)
     meta_path = file_path + '.meta'
     if updated or not os.path.exists(file_path) or not os.path.exists(meta_path):
-        log('Updating Packages:', url)
+        log('Updating Packages:', download_path)
         if file_path != download_path:
             uncompressor = {'.xz': lzma, '.bz2': bz2, '.gz': gzip}
             with uncompressor[ext].open(download_path) as fin:
-                with open(file_path, 'wb') as fout:
+                with DeleteOnError(file_path, 'wb') as fout:
                     shutil.copyfileobj(fin, fout)
-        with open(file_path, 'rt') as f:
+        with open(file_path, 'rt', errors='ignore') as f:
             meta = repo.make_repo_meta(f)
-        with open(meta_path, 'wb') as f:
+        with DeleteOnError(meta_path, 'wb') as f:
             pickle.dump(meta, f)
     else:
         with open(meta_path, 'rb') as f:
@@ -94,7 +117,7 @@ def get_packages(url, dist, path, size, sha256):
 
 
 def get_diff(src, dest, apps):
-    diff_path = os.path.join(BUILD_DIR, dest.name + '.diff')
+    diff_path = os.path.join(BUILD_DIR, 'diff-' + dest.name)
     if not src.updated and not dest.updated and os.path.exists(diff_path):
         with open(diff_path, 'rb') as f:
             return False, pickle.load(f)
@@ -107,7 +130,7 @@ def get_diff(src, dest, apps):
     src.close()
     dest.close()
     diff = src.visited
-    with open(diff_path, 'wb') as f:
+    with DeleteOnError(diff_path, 'wb') as f:
         pickle.dump(diff, f)
     return True, diff
 
@@ -122,33 +145,36 @@ async def run_in_executor(*func_args, use_cache=True):
     return await future
 
 
-async def add_source_line(site, source_line):
-    arch, url, dist, *comps = source_line.split()
-    release = await run_in_executor(get_release, url, dist)
+async def add_source_line(source_line):
+    if not source_line.strip():
+        return None, ()
+    mirror, dist, *comps, arch = source_line.split()
+    release = await run_in_executor(get_release, mirror, dist)
     tasks = []
     for comp in comps:
         for suffix in ('.xz', '.bz2', '.gz', ''):
             match = re.search(r'^.+\s+%s/binary-%s/Packages%s\s*$' % (comp, arch, suffix), release, re.M)
             if match:
                 sha256, size, path = match.group(0).split()
-                tasks.append(run_in_executor(get_packages, url, dist, path, int(size), sha256))
+                tasks.append(run_in_executor(get_packages, mirror, dist, path, int(size), sha256))
                 break
         else:
-            raise Exception('No Packages indices')
-
-    for updated, file_path, meta in await asyncio.gather(*tasks):
-        site.add(updated, url, file_path, meta)
+            raise Exception('No Packages indices: ' + source_line)
+    return mirror, await asyncio.gather(*tasks)
 
 
 async def create_site(name, site_source):
     site = repo.Site(name)
-    await asyncio.gather(*[add_source_line(site, x) for x in filter(str.strip, site_source.splitlines())])
+    tasks = asyncio.gather(*[add_source_line(x) for x in site_source.splitlines()])
+    for mirror, comp_result in await tasks:
+        for updated, file_path, meta in comp_result:
+            site.add(updated, MIRRORS[mirror], file_path, meta)
     return site
 
 
 async def main():
     other_sites = [asyncio.create_task(create_site(*x)) for x in SITE_SOURCES.items()]
-    deepin_site = await asyncio.create_task(create_site(None, DEEPIN_SITE_SOURCE))
+    deepin_site = await create_site(None, DEEPIN_SITE_SOURCE)
 
     apps = [x for meta in deepin_site.meta_list for x in meta if x.endswith('.deepin')]
 
@@ -160,7 +186,7 @@ async def main():
     if any(x[0] for x in result) or not os.path.exists(OUTPUT):
         log('Dumping:', OUTPUT)
         deepin_site.open(False)
-        with open(OUTPUT, 'wt') as f:
+        with DeleteOnError(OUTPUT, 'wt') as f:
             deepin_site.dump(set.union(*[x[1] for x in result]), f)
         deepin_site.close()
 
