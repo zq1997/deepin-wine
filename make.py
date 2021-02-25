@@ -51,8 +51,7 @@ def log(*args, file=sys.stdout):
 
 class DeleteOnError:
     def __init__(self, path, *args, **kwargs):
-        self.path = path = os.path.relpath(path)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self.path = path
         self.f = open(path, *args, **kwargs)
 
     def __enter__(self):
@@ -108,8 +107,7 @@ def get_packages(mirror, dist, path, size, sha256):
             with uncompressor[ext].open(download_path) as fin:
                 with DeleteOnError(file_path, 'wb') as fout:
                     shutil.copyfileobj(fin, fout)
-        with open(file_path, 'rt', errors='ignore') as f:
-            meta = repo.make_repo_meta(f)
+        meta = repo.make_repo_meta(file_path)
         with DeleteOnError(meta_path, 'wb') as f:
             pickle.dump(meta, f)
     else:
@@ -167,18 +165,18 @@ async def add_source_line(source_line):
     return mirror, await asyncio.gather(*tasks)
 
 
-async def create_site(name, site_source):
+async def create_site(site_source, name=None):
     site = repo.Site(name)
     tasks = asyncio.gather(*[add_source_line(x) for x in site_source.splitlines()])
     for mirror, comp_result in await tasks:
         for updated, file_path, meta in comp_result:
-            site.add(updated, MIRRORS[mirror], file_path, meta)
+            site.add(file_path, MIRRORS[mirror], updated, meta)
     return site
 
 
 async def main():
-    other_sites = [asyncio.create_task(create_site(*x)) for x in SITE_SOURCES.items()]
-    deepin_site = await create_site(None, DEEPIN_SITE_SOURCE)
+    other_sites = [asyncio.create_task(create_site(v, k)) for k, v in SITE_SOURCES.items()]
+    deepin_site = await create_site(DEEPIN_SITE_SOURCE)
 
     apps = ', '.join(x for meta in deepin_site.meta_list for x in meta if x.endswith('.deepin'))
 

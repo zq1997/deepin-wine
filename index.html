@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport">
+  <title>软件包列表</title>
+  <style>
+    body {
+      text-align: center;
+    }
+    body>* {
+      display: inline-block;
+      text-align: initial;
+    }
+
+    a {
+      font-size: x-large;
+    }
+
+    table td {
+      padding: 4pt 10pt;
+    }
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    table tr:nth-child(n+1) td:not(:nth-child(3)) {
+      font-family: monospace;
+    }
+    table tr:nth-child(n+1) td:nth-child(3) {
+      min-width: 10em;
+      max-width: 25em;
+    }
+  </style>
+</head>
+
+<body>
+
+<a href="https://github.com/zq1997/deepin-wine">访问GitHub主页</a>
+<br>
+
+<ul>
+  <li>
+    首次使用需要添加仓库：
+    <b><code>wget -O- https://deepin-wine.i-m.dev/setup.sh | sh</code></b>
+  </li>
+  <li>
+    而后使用：
+    <b><code>apt install ...</code></b>
+    安装对应软件包
+  </li>
+  <li>应用图标需要注销重登录后才会出现</li>
+</ul>
+<br>
+
+<table>
+  <tr>
+    <th>包名</th>
+    <th>版本</th>
+    <th>描述</th>
+  </tr>
+<!--template-->
+  <tr>
+    <td>%s</td>
+    <td>%s</td>
+    <td>%s</td>
+  </tr>
+<!--template-->
+</table>
+</body>
+</html>

@@ -60,7 +60,6 @@ def compare_full_version(x, op, y):
     return op in supported_op[cmp]
 
 
-
 class Package:
     def __init__(self, f):
         lines = self.lines = []
@@ -102,22 +101,24 @@ class Package:
         self.lines[i] = '%s: %s\n' % (k, set_value(v))
 
 
-def make_repo_meta(packages_file):
-    entries = defaultdict(list)
-    try:
-        while True:
-            offset = packages_file.tell()
-            pkg = Package(packages_file)
-            entries[pkg['Package']].append(offset)
-            for provide in split_items(',', pkg['Provides']):
-                m = re.fullmatch(NAME_SELECTOR, provide)
-                entries[m.group(1)].append(offset)
-    except StopIteration:
-        return dict(entries)
+def make_repo_meta(packages_path):
+    with open(packages_path, 'rt', errors='ignore') as f:
+        entries = defaultdict(list)
+        try:
+            while True:
+                offset = f.tell()
+                pkg = Package(f)
+                entries[pkg['Package']].append(offset)
+                for provide in split_items(',', pkg['Provides']):
+                    m = re.fullmatch(NAME_SELECTOR, provide)
+                    entries[m.group(1)].append(offset)
+        except StopIteration:
+            return dict(entries)
+
 
 # TODO: check pkg version and arch
 class Site:
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.name = name
         self.updated = False
         self.length = 0
@@ -157,12 +158,14 @@ class Site:
                     entries.append((index, pkg))
         return entries
 
-    def add(self, updated, url, path, meta):
+    def add(self, path, url=None, updated=False, meta=None):
         self.updated |= updated
         self.length += 1
         assert self.length <= (1 << 8)
         self.url_list.append(url)
         self.path_list.append(path)
+        if meta is None:
+            meta = make_repo_meta(path)
         self.meta_list.append(meta)
 
     def open(self, use_copy):
