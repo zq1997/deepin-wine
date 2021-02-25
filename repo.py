@@ -5,8 +5,60 @@ import copy
 NAME_SELECTOR = re.compile(r' ([a-z\d][a-z\d.+\-]+)(?: :(\S+))?(?: \( ([<=>]+) (\S+) \))? '.replace(' ', r'\s*'))
 
 
-def split(text, sep):
+def split_items(sep, text):
     return () if text is None else [x.strip() for x in text.split(sep)]
+
+
+def compare_ver_digit(x, y):
+    x = int(x or '0')
+    y = int(y or '0')
+    return (x > y) - (x < y)
+
+
+def compare_ver_non_digit(x, y):
+    tx = re.sub(r'\D', '3', re.sub(r'[a-zA-Z]', '2', x.replace('~', '0'))) + '1'
+    ty = re.sub(r'\D', '3', re.sub(r'[a-zA-Z]', '2', y.replace('~', '0'))) + '1'
+    if tx < ty:
+        return -1
+    elif tx > ty:
+        return 1
+    else:
+        return (x > y) - (x < y)
+
+
+def compare_version(x, y):
+    pattern = re.compile(r'(\d*)(\D*)')
+    lx = re.findall(pattern, x)
+    ly = re.findall(pattern, y)
+    for (dx, nx), (dy, ny) in zip(lx, ly):
+        cmp = compare_ver_digit(dx, dy)
+        if cmp:
+            return cmp
+        cmp = compare_ver_non_digit(nx, ny)
+        if cmp:
+            return cmp
+    len_lx = len(lx)
+    len_ly = len(ly)
+    return (len_lx > len_ly) - (len_lx < len_ly)
+
+
+def compare_full_version(x, op, y):
+    pattern = re.compile(r'(?:(\d+):)?(.+?)(?:-([^-]+))?')
+    epoch_x, version_x, revision_x = re.fullmatch(pattern, x).groups()
+    epoch_y, version_y, revision_y = re.fullmatch(pattern, y).groups()
+    cmp = compare_ver_digit(epoch_x, epoch_y)
+    if not cmp:
+        cmp = compare_version(version_x, version_y)
+        if not cmp:
+            cmp = compare_version(revision_x or '0', revision_y or '0')
+
+    supported_op = (
+        ('<=', '=', '>='),
+        ('>>', '>='),
+        ('<<', '<=')
+    )
+    return op in supported_op[cmp]
+
 
 
 class Package:
@@ -57,12 +109,11 @@ def make_repo_meta(packages_file):
             offset = packages_file.tell()
             pkg = Package(packages_file)
             entries[pkg['Package']].append(offset)
-            for provide in split(pkg['Provides'], ','):
+            for provide in split_items(',', pkg['Provides']):
                 m = re.fullmatch(NAME_SELECTOR, provide)
                 entries[m.group(1)].append(offset)
     except StopIteration:
         return dict(entries)
-
 
 # TODO: check pkg version and arch
 class Site:
@@ -75,21 +126,36 @@ class Site:
         self.meta_list = []
         self.file_list = None
         self.visited = None
+        self.broken = None
 
-    def __getitem__(self, name):
+    def __getitem__(self, item):
+        name, arch, op, version = item
         entries = []
         for i in range(self.length):
             file = self.file_list[i]
             for offset in self.meta_list[i].get(name, ()):
+                index = i | (offset << 8)
                 file.seek(offset)
-                entries.append((i | (offset << 8), Package(file)))
-        return entries
+                pkg = Package(file)
 
-    def __contains__(self, name):
-        for meta in self.meta_list:
-            if name in meta:
-                return True
-        return False
+                pkg_arch = pkg['Architecture']
+                if pkg_arch != 'all' and arch is not None and arch != pkg_arch:
+                    continue
+
+                ok_version = op is None
+                if not ok_version:
+                    if pkg['Package'] == name:
+                        ok_version = compare_full_version(pkg['Version'], op, version)
+                    if not ok_version:
+                        for provide in split_items(',', pkg['Provides']):
+                            p_name, _, _, p_version = re.fullmatch(NAME_SELECTOR, provide).groups()
+                            if p_name == name and compare_full_version(p_version, op, version):
+                                ok_version = True
+                                break
+
+                if ok_version:
+                    entries.append((index, pkg))
+        return entries
 
     def add(self, updated, url, path, meta):
         self.updated |= updated
@@ -103,6 +169,7 @@ class Site:
         if use_copy:
             site = copy.copy(self)
             site.visited = set()
+            site.broken = set()
         else:
             site = self
         site.file_list = [open(path, 'rt', errors='ignore') for path in site.path_list]
@@ -112,35 +179,45 @@ class Site:
         for f in self.file_list:
             f.close()
 
-    def diff(self, dest, selector):
-        m = re.fullmatch(NAME_SELECTOR, selector)
-        name, arch, op, version = m.groups()
-        if name in dest:
-            return []
+    def diff_site(self, dest, full_selector, base_arch=None):
+        all_broken_chains = []
+        for and_selector in split_items(',', full_selector):
 
-        ok = False
-        broken_chains = []
-        for index, pkg in self[name]:
-            if index not in self.visited:
-                self.visited.add(index)
-                and_ok = True
-                # 还有Pre-Depends
-                for and_dep in split(pkg['Depends'], ','):
-                    or_ok = False
-                    or_broken_chains = []
-                    for or_dep in split(and_dep, '|'):
-                        dep_broken_chains = self.diff(dest, or_dep)
-                        or_broken_chains.extend('%s <- %s' % (x, selector) for x in dep_broken_chains)
-                        or_ok |= not dep_broken_chains
-                    if not or_ok:
-                        and_ok = False
-                        broken_chains.extend(or_broken_chains)
-                ok |= and_ok
-        return [] if ok else broken_chains
+            any_ok = False
+            broken_chains = []
+            for selector in split_items('|', and_selector):
+                name, arch, op, version = re.fullmatch(NAME_SELECTOR, selector).groups()
+                arch = arch or base_arch
+                arch = None if arch in ('all', 'any') else arch
+
+                if dest[name, arch, op, version]:
+                    any_ok = True
+                    continue
+
+                selected = self[name, arch, op, version]
+                if not selected:
+                    broken_chains.append(selector)
+                    continue
+
+                for index, pkg in selected:
+                    if index in self.visited:
+                        any_ok = True
+                        continue
+                    self.visited.add(index)
+                    pkg_arch = pkg['Architecture']
+                    dep = self.diff_site(dest, pkg['Depends'], pkg_arch)
+                    pre_dep = self.diff_site(dest, pkg['Pre-Depends'], pkg_arch)
+                    if dep or pre_dep:
+                        self.broken.add(index)
+                        broken_chains.extend('%s <- %s' % (x, selector) for x in dep + pre_dep)
+                    else:
+                        any_ok = True
+
+            if not any_ok:
+                all_broken_chains.extend(broken_chains)
+        return all_broken_chains
 
     def dump(self, index_list, f):
-        for x in self.path_list:
-            print(x)
         for index in index_list:
             i = index & 0xff
             offset = index >> 8

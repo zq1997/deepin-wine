@@ -1,8 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Semaphore
 import asyncio
-from urllib import request, parse
+from urllib import request
 import os
+import sys
 import shutil
 import re
 import hashlib
@@ -13,7 +14,8 @@ import pickle
 
 import repo
 
-DOWNLOAD = False
+DOWNLOAD = True
+REMAKE = False
 
 BUILD_DIR = './build'
 OUTPUT = './repo/Packages'
@@ -42,9 +44,9 @@ CACHE = {}
 print_lock = Semaphore()
 
 
-def log(*args):
+def log(*args, file=sys.stdout):
     with print_lock:
-        print(*args)
+        print(' '.join(args), file=file)
 
 
 class DeleteOnError:
@@ -118,24 +120,26 @@ def get_packages(mirror, dist, path, size, sha256):
 
 def get_diff(src, dest, apps):
     diff_path = os.path.join(BUILD_DIR, 'diff-' + dest.name)
-    if not src.updated and not dest.updated and os.path.exists(diff_path):
+    if not src.updated and not dest.updated and os.path.exists(diff_path) and not REMAKE:
         with open(diff_path, 'rb') as f:
             return False, pickle.load(f)
 
     log('Diff:', dest.name)
     src = src.open(True)
     dest = dest.open(False)
-    for app in apps:
-        src.diff(dest, app)
+    broken_trains = src.diff_site(dest, apps)
     src.close()
     dest.close()
-    diff = src.visited
+
+    if broken_trains:
+        log('Bad dependencies:\n' + '\n'.join(broken_trains), file=sys.stderr)
+    diff = src.visited - src.broken
     with DeleteOnError(diff_path, 'wb') as f:
         pickle.dump(diff, f)
     return True, diff
 
 
-async def run_in_executor(*func_args, use_cache=True):
+async def thread_run(*func_args, use_cache=True):
     if use_cache and func_args in CACHE:
         future = CACHE[func_args]
     else:
@@ -149,14 +153,14 @@ async def add_source_line(source_line):
     if not source_line.strip():
         return None, ()
     mirror, dist, *comps, arch = source_line.split()
-    release = await run_in_executor(get_release, mirror, dist)
+    release = await thread_run(get_release, mirror, dist)
     tasks = []
     for comp in comps:
         for suffix in ('.xz', '.bz2', '.gz', ''):
             match = re.search(r'^.+\s+%s/binary-%s/Packages%s\s*$' % (comp, arch, suffix), release, re.M)
             if match:
                 sha256, size, path = match.group(0).split()
-                tasks.append(run_in_executor(get_packages, mirror, dist, path, int(size), sha256))
+                tasks.append(thread_run(get_packages, mirror, dist, path, int(size), sha256))
                 break
         else:
             raise Exception('No Packages indices: ' + source_line)
@@ -176,14 +180,14 @@ async def main():
     other_sites = [asyncio.create_task(create_site(*x)) for x in SITE_SOURCES.items()]
     deepin_site = await create_site(None, DEEPIN_SITE_SOURCE)
 
-    apps = [x for meta in deepin_site.meta_list for x in meta if x.endswith('.deepin')]
+    apps = ', '.join(x for meta in deepin_site.meta_list for x in meta if x.endswith('.deepin'))
 
     tasks = []
     for site in asyncio.as_completed(other_sites):
-        tasks.append(asyncio.create_task(run_in_executor(get_diff, deepin_site, await site, apps, use_cache=False)))
+        tasks.append(asyncio.create_task(thread_run(get_diff, deepin_site, await site, apps, use_cache=False)))
     result = await asyncio.gather(*tasks)
 
-    if any(x[0] for x in result) or not os.path.exists(OUTPUT):
+    if any(x[0] for x in result) or not os.path.exists(OUTPUT) or REMAKE:
         log('Dumping:', OUTPUT)
         deepin_site.open(False)
         with DeleteOnError(OUTPUT, 'wt') as f:
@@ -191,5 +195,6 @@ async def main():
         deepin_site.close()
 
 
-pool = ThreadPoolExecutor()
-asyncio.run(main())
+if __name__ == '__main__':
+    pool = ThreadPoolExecutor()
+    asyncio.run(main())
