@@ -18,7 +18,6 @@ packages: | $(REPO)/ $(BUILD)/
 %/:
 	mkdir -p $@
 
-
 $(REPO)/setup.sh: setup.sh | $(REPO)/
 	cp $< $@
 
