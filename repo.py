@@ -150,7 +150,7 @@ class Site:
                     if not ok_version:
                         for provide in split_items(',', pkg['Provides']):
                             p_name, _, _, p_version = re.fullmatch(NAME_SELECTOR, provide).groups()
-                            if p_name == name and compare_full_version(p_version, op, version):
+                            if p_name == name and (p_version is None or compare_full_version(p_version, op, version)):
                                 ok_version = True
                                 break
 
