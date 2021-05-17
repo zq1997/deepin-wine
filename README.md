@@ -48,6 +48,7 @@
    | :------: | :------------------------: |
    |   微信   |    com.qq.weixin.deepin    |
    |    QQ    |      com.qq.im.deepin      |
+   |   TIM    |    com.qq.office.deepin    |
    |   钉钉   |    com.dingtalk.deepin     |
    | 阿里旺旺 | com.taobao.wangwang.deepin |
    |  QQ音乐  |    com.qq.music.deepin     |
