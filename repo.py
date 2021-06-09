@@ -116,7 +116,6 @@ def make_repo_meta(packages_path):
             return dict(entries)
 
 
-# TODO: check pkg version and arch
 class Site:
     def __init__(self, name=None):
         self.name = name
@@ -128,35 +127,6 @@ class Site:
         self.file_list = None
         self.visited = None
         self.broken = None
-
-    def __getitem__(self, item):
-        name, arch, op, version = item
-        entries = []
-        for i in range(self.length):
-            file = self.file_list[i]
-            for offset in self.meta_list[i].get(name, ()):
-                index = i | (offset << 8)
-                file.seek(offset)
-                pkg = Package(file)
-
-                pkg_arch = pkg['Architecture']
-                if pkg_arch != 'all' and arch is not None and arch != pkg_arch:
-                    continue
-
-                ok_version = op is None
-                if not ok_version:
-                    if pkg['Package'] == name:
-                        ok_version = compare_full_version(pkg['Version'], op, version)
-                    if not ok_version:
-                        for provide in split_items(',', pkg['Provides']):
-                            p_name, _, _, p_version = re.fullmatch(NAME_SELECTOR, provide).groups()
-                            if p_name == name and (p_version is None or compare_full_version(p_version, op, version)):
-                                ok_version = True
-                                break
-
-                if ok_version:
-                    entries.append((index, pkg))
-        return entries
 
     def add(self, path, url=None, updated=False, meta=None):
         self.updated |= updated
@@ -182,6 +152,38 @@ class Site:
         for f in self.file_list:
             f.close()
 
+    def get_packages(self, name):
+        entries = []
+        for i in range(self.length):
+            file = self.file_list[i]
+            for offset in self.meta_list[i].get(name, ()):
+                index = i | (offset << 8)
+                file.seek(offset)
+                pkg = Package(file)
+                entries.append((index, pkg))
+        return entries
+
+    @staticmethod
+    def filter_arch_version(old_entries, name, arch, op, version):
+        entries = []
+        for entry in old_entries:
+            pkg = entry[1]
+            pkg_arch = pkg['Architecture']
+            if pkg_arch != 'all' and arch is not None and arch != pkg_arch:
+                continue
+            if op is None:
+                entries.append(entry)
+                continue
+            if pkg['Package'] == name and compare_full_version(pkg['Version'], op, version):
+                entries.append(entry)
+                continue
+            for provide in split_items(',', pkg['Provides']):
+                p_name, _, _, p_version = re.fullmatch(NAME_SELECTOR, provide).groups()
+                if p_name == name and (p_version is None or compare_full_version(p_version, op, version)):
+                    entries.append(entry)
+                    break
+        return entries
+
     def diff_site(self, dest, full_selector, base_arch=None):
         all_broken_chains = []
         for and_selector in split_items(',', full_selector):
@@ -193,16 +195,17 @@ class Site:
                 arch = arch or base_arch
                 arch = None if arch in ('all', 'any') else arch
 
-                if dest[name, arch, op, version]:
+                if Site.filter_arch_version(dest.get_packages(name), name, arch, op, version):
                     any_ok = True
                     continue
 
-                selected = self[name, arch, op, version]
-                if not selected:
+                entries = self.get_packages(name)
+                filtered_entries = Site.filter_arch_version(entries, name, arch, op, version)
+                if not filtered_entries:
                     broken_chains.append(selector)
                     continue
 
-                for index, pkg in selected:
+                for index, pkg in filtered_entries:
                     if index in self.visited:
                         any_ok = True
                         continue
@@ -215,6 +218,8 @@ class Site:
                         broken_chains.extend('%s <- %s' % (x, selector) for x in dep + pre_dep)
                     else:
                         any_ok = True
+                        for index, pkg in entries:
+                            self.visited.add(index)
 
             if not any_ok:
                 all_broken_chains.extend(broken_chains)
