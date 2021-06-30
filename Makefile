@@ -6,7 +6,7 @@ BUILD ?= build
 all: $(REPO)/Release $(REPO)/setup.sh $(REPO)/index.html
 
 netlify:
-	apt-get download apt-utils
+	wget http://archive.ubuntu.com/ubuntu/pool/main/a/apt/apt-utils_2.1.10_amd64.deb
 	dpkg-deb -x apt-utils_*.deb packages
 	env PATH=$${PATH}:packages/usr/bin $(MAKE) -j all
 	echo '/https/* https://:splat 301!' > $(REPO)/_redirects
