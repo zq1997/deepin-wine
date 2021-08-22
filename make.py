@@ -31,6 +31,7 @@ DEEPIN_SITE_SOURCE = '''
     deepin apricot main non-free i386
     deepin apricot main non-free amd64
     deepin-store eagle appstore i386
+    deepin-store eagle appstore amd64
 '''
 SITE_SOURCES = {
     'debian-stable': 'debian stable main amd64',

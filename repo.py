@@ -2,7 +2,10 @@ from collections import defaultdict
 import re
 import copy
 
-NAME_SELECTOR = re.compile(r' ([a-z\d][a-z\d.+\-]+)(?: :(\S+))?(?: \( ([<=>]+) (\S+) \))? '.replace(' ', r'\s*'))
+# 按理包名只能小写，但是deepin源里有不少乱来的，只能兼容它了
+NAME_SELECTOR = re.compile(r' (A(?:A|[.+\-])*)(?: :(.+?))?(?: \( ([<=>]+) (.+?) \))? '
+                           .replace('A', '[a-zA-Z\d]')
+                           .replace(' ', r'\s*'))
 
 
 def split_items(sep, text):
@@ -168,9 +171,10 @@ class Site:
         entries = []
         for entry in old_entries:
             pkg = entry[1]
-            pkg_arch = pkg['Architecture']
-            if pkg_arch != 'all' and arch is not None and arch != pkg_arch:
-                continue
+            # 迷惑，deepin的源真是乱来，Architecture最好也别筛选了
+            # pkg_arch = pkg['Architecture']
+            # if pkg_arch != 'all' and arch is not None and arch != pkg_arch:
+            #     continue
             if op is None:
                 entries.append(entry)
                 continue
