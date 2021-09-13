@@ -8,22 +8,17 @@ function USAGE() {
     echo 'Usage:'
     echo '		-i  [Docker Container ID or Name] [APP Name]'
     echo '		<APP Name> list:'
-    echo ' 			      QQ'
-    echo ' 			      TIM'
-    echo ' 			      WeChat'
-    echo ' 			      BaiduNetDisk'
-    echo '			      ThunderSpeed'
-    echo '			      Foxmail'
-    echo 'Example: source start.sh -i 0af TIM'
+    echo ' 			      com.qq.im.deepin'
+    echo ' 			      com.evernote.deepin'
+    echo 'Example: source start.sh -i 0af com.qq.im.deepin'
 }
 APP_LIST=(
     com.qq.im.deepin
     com.qq.office.deepin
     com.qq.music.deepin
-    WeChat
-    BaiduNetDisk
-    ThunderSpeed
-    Foxmail
+    com.qq.weixin.deepin
+    com.evernote.deepin
+    com.taobao.wangwang.deepin
 )
 if [ $# != 3 ]; then
     USAGE

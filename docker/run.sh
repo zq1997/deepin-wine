@@ -2,12 +2,12 @@
 xhost + &>/dev/null
 set -e
 ## build docker image
-#if docker build -t deepin-wine ./; then
-#	sed -i '5,10s/^/#&/g' $0
-#else
-#	printf "build docker image error,exit process\n"
-#	exit 127
-#fi
+if docker build -t deepin-wine ./; then
+	sed -i '5,10s/^/#&/g' $0
+else
+	printf "build docker image error,exit process\n"
+	exit 127
+fi
 ## create docker container
 function CREATE() {
     mkdir -p $(pwd)/APP_PATH
@@ -24,7 +24,7 @@ CREATE
 code=$?
 if [ "$code" == "0" ]; then
     awk 'BEGIN{printf "Your container id is ";system("cat docker.id && echo");system("echo -n [\033[32m\033[5m+\033[0m]");\
-	printf "Run [source start.sh -i '" $dockerid "'";printf "TIM] to run TIM or another APP\n"}'
+	printf "Run [source start.sh -i '" $dockerid "'";printf "com.qq.im.deepin] to run QQ or another APP\n"}'
     echo
     echo "Exec 'bash start.sh --help' for more information."
     shred -f -u -v -z docker.id >/dev/null 2>&1
