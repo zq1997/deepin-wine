@@ -69,3 +69,17 @@ apt install com.evernote.deepin
 使用 `clear.sh` 进行清理，会删除 `APP_PATH` 和容器
 
 使用 `uninstall.sh` 移除容器和镜像
+
+## 6 其它问题
+
+### 宿主机重启后如何使用
+
+只需重启容器即可
+```bash
+docker start <ID>
+```
+
+但可能会出现启动程序后没有反应的情况，这是因为重启容器失去了访问 X11 服务的权限。解决方法：
+```bash
+xhost + # 允许任何用户访问 X11 服务
+```
