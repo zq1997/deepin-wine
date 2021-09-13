@@ -1,6 +1,5 @@
 #!/bin/bash
 function RUN_APP() {
-    echo /opt/apps/$2/files/run.sh
     docker exec -ti $1 /usr/bin/nohup /bin/bash /opt/apps/$2/files/run.sh &>/dev/null &
 }
 function USAGE() {

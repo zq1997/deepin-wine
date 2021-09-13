@@ -5,7 +5,7 @@
 目前在 Ubuntu 21.04 + Wayland 的测试情况：
 |体验|应用|包名|情况|
 |---|:--:|:---:|---|
-|🟩|QQ|com.qq.im.deepin|可以运行，但初次启动没有鼠标，第二次运行闪退，随后正常|
+|🟨|QQ|com.qq.im.deepin|可以运行，但初次启动没有鼠标，随后有概率在使用时闪退|
 |🟥|TIM|com.qq.office.deepin|TIM 内部报错|
 |🟥|微信|com.qq.weixin.deepin|微信内部报错|
 |🟥|QQ 音乐|com.qq.music.deepin|可以运行，但会触发自动更新，随后闪退|
