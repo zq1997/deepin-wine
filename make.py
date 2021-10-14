@@ -38,7 +38,9 @@ SITE_SOURCES = {
     'debian-testing': 'debian testing main amd64',
     'ubuntu-bionic': 'ubuntu bionic main amd64',
     'ubuntu-focal': 'ubuntu focal main amd64',
-    'ubuntu-groovy': 'ubuntu groovy main amd64'
+    'ubuntu-groovy': 'ubuntu groovy main amd64',
+    'ubuntu-hirsute': 'ubuntu hirsute main amd64',
+    'ubuntu-impish': 'ubuntu impish main amd64'
 }
 
 CACHE = {}
