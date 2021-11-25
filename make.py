@@ -23,15 +23,15 @@ OUTPUT = './repo/Packages'
 
 MIRRORS = {
     'deepin': 'https://community-packages.deepin.com/deepin',
-    'deepin-store': 'https://community-store-packages.deepin.com/appstore',
+    'deepin-store': 'https://com-store-packages.uniontech.com/appstore',
     'debian': 'https://mirrors.tuna.tsinghua.edu.cn/debian',
     'ubuntu': 'https://mirrors.tuna.tsinghua.edu.cn/ubuntu'
 }
 DEEPIN_SITE_SOURCE = '''
     deepin apricot main non-free i386
     deepin apricot main non-free amd64
-    deepin-store eagle appstore i386
-    deepin-store eagle appstore amd64
+    deepin-store deepin appstore i386
+    deepin-store deepin appstore amd64
 '''
 SITE_SOURCES = {
     'debian-stable': 'debian stable main amd64',
