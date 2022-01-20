@@ -36,9 +36,7 @@ DEEPIN_SITE_SOURCE = '''
 SITE_SOURCES = {
     'debian-stable': 'debian stable main amd64',
     'debian-testing': 'debian testing main amd64',
-    'ubuntu-bionic': 'ubuntu bionic main amd64',
     'ubuntu-focal': 'ubuntu focal main amd64',
-    'ubuntu-groovy': 'ubuntu groovy main amd64',
     'ubuntu-hirsute': 'ubuntu hirsute main amd64',
     'ubuntu-impish': 'ubuntu impish main amd64'
 }
@@ -90,8 +88,12 @@ def download(mirror, *paths, size=None, sha256=None):
                     return False, path
     log('Downloading: %s\n\tto %s' % (url, path))
     with DeleteOnError(path, 'wb') as f:
-        with request.urlopen(url, timeout=30) as resp:
-            shutil.copyfileobj(resp, f)
+        try:
+            with request.urlopen(url, timeout=30) as resp:
+                shutil.copyfileobj(resp, f)
+        except Exception as e:
+            print(e, url)
+            raise
         return True, path
 
 
