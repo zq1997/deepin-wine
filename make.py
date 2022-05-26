@@ -24,8 +24,8 @@ OUTPUT = './repo/Packages'
 MIRRORS = {
     'deepin': 'https://community-packages.deepin.com/deepin',
     'deepin-store': 'https://com-store-packages.uniontech.com/appstore',
-    'debian': 'https://mirrors.tuna.tsinghua.edu.cn/debian',
-    'ubuntu': 'https://mirrors.tuna.tsinghua.edu.cn/ubuntu'
+    'debian': 'https://mirrors.ustc.edu.cn/debian',
+    'ubuntu': 'https://mirrors.ustc.edu.cn/ubuntu'
 }
 DEEPIN_SITE_SOURCE = '''
     deepin apricot main non-free i386
