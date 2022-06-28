@@ -81,7 +81,7 @@
 
    [TopIcons Plus](https://extensions.gnome.org/extension/1031/topicons/)解决问题。
 
-  至于插件安装的方法，出门左转搜索引擎。比较快的一种方法时`sudo apt-get install gnome-shell-extension-top-icons-plus gnome-tweaks`，注销重新登录后在tweak工具中启用对应插件。
+  至于插件安装的方法，出门左转搜索引擎。比较快的一种方法是`sudo apt-get install gnome-shell-extension-top-icons-plus gnome-tweaks`，注销重新登录后在tweak工具中启用对应插件。
 
 - KDE之类，我没试过，请自行探索。
 
