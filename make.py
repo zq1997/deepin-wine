@@ -37,8 +37,7 @@ SITE_SOURCES = {
     'debian-stable': 'debian stable main amd64',
     'debian-testing': 'debian testing main amd64',
     'ubuntu-focal': 'ubuntu focal main amd64',
-    'ubuntu-hirsute': 'ubuntu hirsute main amd64',
-    'ubuntu-impish': 'ubuntu impish main amd64'
+    'ubuntu-jammy': 'ubuntu jammy main amd64'
 }
 EXTRA_PACKAGES = [
     ('ubuntu focal universe amd64', ('python-gi',))
