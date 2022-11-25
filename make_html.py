@@ -11,7 +11,7 @@ site = repo.Site()
 site.add(INPUT)
 site.open(False)
 for name in (x for meta in site.meta_list for x in meta if x.endswith('.deepin')):
-    for _, pkg in site.get_packages(name):
+    for _, pkg in site.get_package_entries(name):
         url = '%s://%s' % tuple(pkg['Filename'].split('/', 1))
         result.append((url, pkg['Package'], pkg['Version'], pkg['Description']))
 site.close()

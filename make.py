@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Semaphore
 import asyncio
-from urllib import request
+import urllib.request
+import urllib.parse
 import os
 import sys
 import shutil
@@ -11,15 +12,15 @@ import lzma
 import gzip
 import bz2
 import pickle
+import json
 
 import repo
 
-DOWNLOAD = True
-REMAKE = False
+SKIP_DOWNLOAD = False
+ALWAYS_REMAKE = False
 
 BUILD_DIR = './build'
 OUTPUT = './repo/Packages'
-
 
 MIRRORS = {
     'deepin': 'https://community-packages.deepin.com/deepin',
@@ -63,55 +64,63 @@ class DeleteOnError:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.f.__exit__(exc_type, exc_val, exc_tb)
-        if exc_type is not None:
+        if exc_type is not None and os.path.isfile(self.path):
             os.remove(self.path)
 
 
-def download(mirror, *paths, size=None, sha256=None):
-    url = '/'.join((MIRRORS[mirror], *paths))
-    path = os.path.join(BUILD_DIR, '/'.join((mirror, *paths)).replace('/', '#'))
-    if os.path.exists(path):
-        if not DOWNLOAD:
-            return False, path
-        with open(path, 'rb') as f:
-            f.seek(0, os.SEEK_END)
-            if f.tell() == size:
-                f.seek(0)
-                hasher = hashlib.sha256()
-                while True:
-                    data = f.read(hasher.block_size)
-                    if not data:
-                        break
-                    hasher.update(data)
-                if sha256 is not None and hasher.hexdigest().lower() == sha256:
-                    return False, path
-    log('Downloading: %s\n\tto %s' % (url, path))
-    with DeleteOnError(path, 'wb') as f:
-        try:
-            with request.urlopen(url, timeout=30) as resp:
-                shutil.copyfileobj(resp, f)
-        except Exception as e:
-            print(e, url)
-            raise
-        return True, path
-
-
 def get_release(mirror, dist):
-    _, path = download(mirror, 'dists', dist, 'Release')
-    with open(path, 'rt') as f:
-        release = f.read()
-    return re.search(r'\nSHA256:\s*((?:\n\s+.+)+)', release).group(1)
+    url = '/'.join((MIRRORS[mirror], 'dists', dist, 'Release'))
+    cache_path = os.path.join(BUILD_DIR, '%s#%s#%s' % (mirror, dist, 'Release'))
+    if os.path.exists(cache_path) and SKIP_DOWNLOAD:
+        with open(cache_path, 'rt') as f:
+            return json.load(f)
+
+    log('Downloading: %s' % url)
+
+    with DeleteOnError(cache_path, 'wb') as f:
+        with urllib.request.urlopen(url, timeout=30) as resp:
+            sha256_and_size = {}
+            result = (resp.url, sha256_and_size)
+            for line in re.search(r'\nSHA256:\s*\n((?:\s+.+\n)+)', resp.read().decode()).group(1).splitlines():
+                sha256, size, path = line.split()
+                sha256_and_size[path] = (sha256, int(size))
+        with open(cache_path, 'wt') as f:
+            json.dump(result, f, indent=2)
+        return result
 
 
-def get_packages(mirror, dist, path, size, sha256):
-    updated, download_path = download(mirror, 'dists', dist, path, size=size, sha256=sha256)
-    file_path, ext = os.path.splitext(download_path)
+def get_packages(url, cache_path, size, sha256):
+    updated = True
+    if os.path.exists(cache_path):
+        if not SKIP_DOWNLOAD:
+            updated = False
+        else:
+            with open(cache_path, 'rb') as f:
+                f.seek(0, os.SEEK_END)
+                if f.tell() == size:
+                    f.seek(0)
+                    hasher = hashlib.sha256()
+                    while True:
+                        data = f.read(hasher.block_size)
+                        if not data:
+                            break
+                        hasher.update(data)
+                    if hasher.hexdigest().lower() == sha256:
+                        updated = False
+
+    if updated:
+        log('Downloading: %s' % url)
+        with DeleteOnError(cache_path, 'wb') as f:
+            with urllib.request.urlopen(url, timeout=30) as resp:
+                shutil.copyfileobj(resp, f)
+
+    file_path, ext = os.path.splitext(cache_path)
     meta_path = file_path + '.meta'
     if updated or not os.path.exists(file_path) or not os.path.exists(meta_path):
-        log('Updating Packages:', download_path)
-        if file_path != download_path:
+        log('Updating Packages:', cache_path)
+        if file_path != cache_path:
             uncompressor = {'.xz': lzma, '.bz2': bz2, '.gz': gzip}
-            with uncompressor[ext].open(download_path) as fin:
+            with uncompressor[ext].open(cache_path) as fin:
                 with DeleteOnError(file_path, 'wb') as fout:
                     shutil.copyfileobj(fin, fout)
         meta = repo.make_repo_meta(file_path)
@@ -125,7 +134,7 @@ def get_packages(mirror, dist, path, size, sha256):
 
 def get_diff(src, dest, apps):
     diff_path = os.path.join(BUILD_DIR, 'diff-' + dest.name)
-    if not src.updated and not dest.updated and os.path.exists(diff_path) and not REMAKE:
+    if not src.updated and not dest.updated and os.path.exists(diff_path) and not ALWAYS_REMAKE:
         with open(diff_path, 'rb') as f:
             return False, pickle.load(f)
 
@@ -158,14 +167,16 @@ async def add_source_line(source_line):
     if not source_line.strip():
         return None, ()
     mirror, dist, *comps, arch = source_line.split()
-    release = await thread_run(get_release, mirror, dist)
+    redirected_url, sha256_and_size = await thread_run(get_release, mirror, dist)
     tasks = []
     for comp in comps:
         for suffix in ('.xz', '.bz2', '.gz', ''):
-            match = re.search(r'^.+\s+%s/binary-%s/Packages%s\s*$' % (comp, arch, suffix), release, re.M)
-            if match:
-                sha256, size, path = match.group(0).split()
-                tasks.append(thread_run(get_packages, mirror, dist, path, int(size), sha256))
+            path = '%s/binary-%s/Packages%s' % (comp, arch, suffix)
+            if path in sha256_and_size:
+                sha256, size = sha256_and_size[path]
+                packages_url = urllib.parse.urljoin(redirected_url, path)
+                packages_cache_path = os.path.join(BUILD_DIR, '%s#%s#%s' % (mirror, dist, path.replace('/', '#')))
+                tasks.append(thread_run(get_packages, packages_url, packages_cache_path, size, sha256))
                 break
         else:
             raise Exception('No Packages indices: ' + source_line)
@@ -192,7 +203,7 @@ async def main():
         tasks.append(asyncio.create_task(thread_run(get_diff, deepin_site, await site, apps, use_cache=False)))
     result = await asyncio.gather(*tasks)
 
-    if any(x[0] for x in result) or not os.path.exists(OUTPUT) or REMAKE:
+    if any(x[0] for x in result) or not os.path.exists(OUTPUT) or ALWAYS_REMAKE:
         log('Dumping:', OUTPUT)
         deepin_site.open(False)
         with DeleteOnError(OUTPUT, 'wt') as f:
@@ -202,7 +213,7 @@ async def main():
                 site = await create_site(site_source)
                 site.open(False)
                 for pkg_name in pkg_names:
-                    site.dump([x[0] for x in site.get_packages(pkg_name)], f)
+                    site.dump([x[0] for x in site.get_package_entries(pkg_name)], f)
                 site.close()
         deepin_site.close()
 

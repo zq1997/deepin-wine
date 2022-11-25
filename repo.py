@@ -155,7 +155,7 @@ class Site:
         for f in self.file_list:
             f.close()
 
-    def get_packages(self, name):
+    def get_package_entries(self, name):
         entries = []
         for i in range(self.length):
             file = self.file_list[i]
@@ -199,11 +199,11 @@ class Site:
                 arch = arch or base_arch
                 arch = None if arch in ('all', 'any') else arch
 
-                if Site.filter_arch_version(dest.get_packages(name), name, arch, op, version):
+                if Site.filter_arch_version(dest.get_package_entries(name), name, arch, op, version):
                     any_ok = True
                     continue
 
-                entries = self.get_packages(name)
+                entries = self.get_package_entries(name)
                 filtered_entries = Site.filter_arch_version(entries, name, arch, op, version)
                 if not filtered_entries:
                     broken_chains.append(selector)
