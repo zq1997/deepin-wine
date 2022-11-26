@@ -1,4 +1,5 @@
 import html
+import datetime
 
 import repo
 
@@ -25,4 +26,5 @@ with open(OUTPUT, 'wt') as f:
     f.write(before_t)
     for x in result:
         f.write(the_t % tuple(map(html.escape, x)))
-    f.write(after_t)
+    update_time = (datetime.datetime.utcnow() + datetime.timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+    f.write(after_t.replace('<!--update_time-->', update_time))
