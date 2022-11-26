@@ -67,13 +67,15 @@
 
 ### 没有应用图标
 
-注销-登入用户即可，可注销或重启。
+重新登入即可，可注销或重启。
 
-### 字体相关问题
+### 微信/QQ等无法启动
 
-新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。
+最新版本可能会遇到这个问题，与`WINEPREDLL`环境变量有关，参考[issue#310](https://github.com/zq1997/deepin-wine/issues/310)。
 
-[字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)讨论的是以前的版本，谨慎参考。
+### 容器被重置问题
+
+每次启动应用后发现之前的wine配置或者app内配置都丢失了？尤其是TIM，发现聊天文件啥的都没了。建议参考[issue#270](https://github.com/zq1997/deepin-wine/issues/270)。
 
 ### QQ/微信托盘小图标显示异常
 
@@ -91,19 +93,17 @@
 
 ### QQ头像无法加载
 
-可能是IPv6问题，见[讨论区](https://github.com/zq1997/deepin-wine/issues/286)。
-
-### QQ截图无法使用
-
-见[讨论区](https://github.com/zq1997/deepin-wine/issues/31)。
-
-### 微信启动后屏幕上有个黑框
-
-见[讨论区](https://github.com/zq1997/deepin-wine/issues/24)。
+可能是IPv6问题，见[issue#286](https://github.com/zq1997/deepin-wine/issues/286)。
 
 ### 没办法进行QQ远程/视频通话
 
 视频相关的功能对硬件和底层驱动的依赖很大，Wine毕竟不是Windows，100%完美模拟是不可能的。
+
+### 字体相关问题
+
+新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。
+
+[字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)讨论的是以前的版本，谨慎参考。
 
 ### 安装依赖问题
 
