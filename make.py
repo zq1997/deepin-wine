@@ -40,6 +40,9 @@ SITE_SOURCES = {
     'ubuntu-focal': 'ubuntu focal main amd64',
     'ubuntu-jammy': 'ubuntu jammy main amd64'
 }
+EXTRA_PACKAGES = [
+    ('ubuntu kinetic main amd64', ('libsasl2-2', 'libsasl2-modules-db'))
+]
 
 CACHE = {}
 print_lock = Semaphore()
@@ -205,6 +208,14 @@ async def main():
         deepin_site.open(False)
         with DeleteOnError(OUTPUT, 'wt') as f:
             deepin_site.dump(set.union(*[x[1] for x in result]), f)
+
+            for site_source, pkg_names in EXTRA_PACKAGES:
+                site = await create_site(site_source)
+                site.open(False)
+                for pkg_name in pkg_names:
+                    site.dump([x[0] for x in site.get_package_entries(pkg_name)], f)
+                site.close()
+
         deepin_site.close()
 
 
