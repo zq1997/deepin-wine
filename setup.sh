@@ -17,13 +17,6 @@ sudo tee "$LIST_FILE" >/dev/null << "EOF"
 deb [trusted=yes] https://deepin-wine.i-m.dev /
 EOF
 
-# 设置优先级
-sudo tee "/etc/apt/preferences.d/deepin-wine.i-m.dev.pref" >/dev/null << "EOF"
-Package: *
-Pin: release l=deepin-wine
-Pin-Priority: 200
-EOF
-
 # 添加XDG_DATA_DIRS配置，使得应用图标能正常显示
 sudo tee "/etc/profile.d/deepin-wine.i-m.dev.sh" >/dev/null << "EOF"
 XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/local/share:/usr/share}

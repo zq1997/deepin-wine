@@ -150,8 +150,7 @@
 4. 移除软件仓库
 
    ```sh
-   sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref \
-           /etc/apt/sources.list.d/deepin-wine.i-m.dev.list \
+   sudo rm /etc/apt/sources.list.d/deepin-wine.i-m.dev.list \
            /etc/profile.d/deepin-wine.i-m.dev.sh
    sudo apt-get update
    ```
@@ -189,19 +188,7 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
    deb [trusted=yes] https://deepin-wine.i-m.dev /
    ```
 
-3. 设置源优先级
-
-   这步是为了降低本仓库的优先级，尽可能使用发行版仓库中固有的软件包而不是Deepin仓库的软件包，最小化风险。
-
-   创建`/etc/apt/preferences.d/deepin-wine.i-m.dev.pref`文件，编辑其内容如下，
-
-   ```
-   Package: *
-   Pin: release l=deepin-wine
-   Pin-Priority: 200
-   ```
-
-4. 添加XDG_DATA_DIRS配置
+3. 添加XDG_DATA_DIRS配置
 
    这是为了让应用图标能正常显示，创建`/etc/profile.d/deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
 
@@ -215,7 +202,7 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
    export XDG_DATA_DIRS
    ```
 
-5. 刷新软件源
+4. 刷新软件源
 
    ```sh
    sudo apt-get update
