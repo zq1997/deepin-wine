@@ -41,7 +41,8 @@ SITE_SOURCES = {
     'ubuntu-jammy': 'ubuntu jammy main amd64'
 }
 EXTRA_PACKAGES = [
-    ('ubuntu kinetic main amd64', ('libsasl2-2', 'libsasl2-modules-db'))
+    ('ubuntu kinetic main amd64', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db')),
+    ('ubuntu kinetic main i386', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db'))
 ]
 
 CACHE = {}
