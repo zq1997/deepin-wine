@@ -191,6 +191,8 @@ class Site:
     def diff_site(self, dest, full_selector, base_arch=None):
         all_broken_chains = []
         for and_selector in split_items(',', full_selector):
+            if not and_selector.strip():
+                continue
 
             any_ok = False
             broken_chains = []
