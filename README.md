@@ -83,11 +83,13 @@
 
 - 如果是Linux Mint的Cinnamon桌面环境，那基本能直接正常使用。（不过多显示屏情况下有些问题，需要把左侧显示屏的设置为主屏幕）
 
-- 如果是Ubuntu的Gnome桌面环境，任务栏就很别扭，成了个悬浮对话框，可以安装Gnome Shell插件
-
-   [TopIcons Plus](https://extensions.gnome.org/extension/1031/topicons/)解决问题。
-
-  至于插件安装的方法，出门左转搜索引擎。比较快的一种方法是`sudo apt-get install gnome-shell-extension-top-icons-plus gnome-tweaks`，注销重新登录后在tweak工具中启用对应插件。
+- 如果是Gnome桌面环境，任务栏就很别扭，成了个悬浮对话框，可以安装Gnome Shell插件：
+  - Gnome 3.36以上版本安装 [Tray Icons: Reloaded](https://extensions.gnome.org/extension/2890/tray-icons-reloaded/)    
+  - Gnome 3.36及以下版本安装 [TopIcons Plus](https://extensions.gnome.org/extension/1031/topicons/)
+    
+  至于插件安装的方法，出门左转搜索引擎。
+  - Gnome 老版本的一种方法是`sudo apt-get install gnome-shell-extension-top-icons-plus gnome-tweaks`，注销重新登录后在tweak工具中启用对应插件。
+  - Gnome 新版本可以使用**扩展管理器**`sudo apt install gnome-shell-extension-manager -y`， 打开 `扩展管理器`， 在**浏览**标签页搜索**Tray Icons: Reloaded**并安装，然后切换到**已安装**标签页，确保**Tray Icons: Reloaded**已启用。 
 
 - KDE之类，我没试过，请自行探索。
 
