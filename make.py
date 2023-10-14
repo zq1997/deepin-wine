@@ -41,9 +41,9 @@ SITE_SOURCES = {
     'ubuntu-jammy': 'ubuntu jammy main amd64'
 }
 EXTRA_PACKAGES = [
-    # ubuntu-jammy需要如下的包
-    ('ubuntu kinetic main amd64', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db')),
-    ('ubuntu kinetic main i386', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db'))
+    # ubuntu-jammy存在一些问题，需要补充如下的包
+    ('ubuntu mantic main amd64', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db')),
+    ('ubuntu mantic main i386', ('libsasl2-2', 'libsasl2-modules', 'libsasl2-modules-db'))
 ]
 
 CACHE = {}
