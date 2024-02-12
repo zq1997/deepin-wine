@@ -73,10 +73,6 @@
 
 最新版本可能会遇到这个问题，与`WINEPREDLL`环境变量有关，参考[issue#310](https://github.com/zq1997/deepin-wine/issues/310)。
 
-### 容器被重置问题
-
-每次启动应用后发现之前的wine配置或者app内配置都丢失了？尤其是TIM，发现聊天文件啥的都没了。建议参考[issue#270](https://github.com/zq1997/deepin-wine/issues/270)。
-
 ### QQ/微信托盘小图标显示异常
 
 这和桌面环境有关，Linux发行版桌众多，面布局千奇百怪，并不是每一个都具有与【Windows系统托盘】对应的控件。
@@ -93,19 +89,13 @@
 
 - KDE之类，我没试过，请自行探索。
 
-### QQ头像无法加载
-
-可能是IPv6问题，见[issue#286](https://github.com/zq1997/deepin-wine/issues/286)。
-
 ### 没办法进行QQ远程/视频通话
 
 视频相关的功能对硬件和底层驱动的依赖很大，Wine毕竟不是Windows，100%完美模拟是不可能的。
 
 ### 字体相关问题
 
-新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。
-
-[字体问题集中讨论区](https://github.com/zq1997/deepin-wine/issues/15)讨论的是以前的版本，谨慎参考。
+新版本的deepin-wine似乎已经能比较好地解决字体问题了，一般装上去就能用了。如果有问题，可以先尝试复制一份完整的Windows字体到Linux中。
 
 ### 安装依赖问题
 
@@ -119,15 +109,13 @@
 
 ### 更多问题
 
-1. 多测试，先排除无关因素，很多问题可能是一个删除清理/重启/重装就能解决的事。
+1. 尽量多测试，排除偶然因素，可能是一个重启/删除重装就能解决的事。
 
-2. Linux不是Windows，Wine也不是Windows，不要期待100%丝滑享受。
+2. 多多搜索已有issues，大家都列出了各种原因探讨和解决方案了，值得一看。
 
-3. 善用搜索引擎，学会查找已有资料，即使是百度和CSDN这些垃圾信息成堆的网站也是有不少有用的东西。
+3. 新的欢迎提issue，但是也请提供Linux发行版名称与版本号、桌面环境、APT源列表等信息。
 
-4. 仓库的issues中有些名为【xxxx集中讨论区】的帖子，大家都列出了各种原因探讨和解决方案了，值得一看。
-
-5. 新的欢迎提issue，但是也请提供Linux发行版名称与版本号、桌面环境、APT源列表等信息。
+4. Linux不是Windows，Wine也不是Windows，不要期待100%丝滑享受。
 
 
 
@@ -152,7 +140,8 @@
 4. 移除软件仓库
 
    ```sh
-   sudo rm /etc/apt/sources.list.d/deepin-wine.i-m.dev.list \
+   sudo rm /etc/apt/preferences.d/deepin-wine.i-m.dev.pref \
+           /etc/apt/sources.list.d/deepin-wine.i-m.dev.list \
            /etc/profile.d/deepin-wine.i-m.dev.sh
    sudo apt-get update
    ```
@@ -190,7 +179,19 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
    deb [trusted=yes] https://deepin-wine.i-m.dev /
    ```
 
-3. 添加XDG_DATA_DIRS配置
+3. 设置源优先级
+
+   这步是为了降低本仓库的优先级，尽可能使用发行版仓库中固有的软件包而不是Deepin仓库的软件包，最小化风险。
+
+   创建`/etc/apt/preferences.d/deepin-wine.i-m.dev.pref`文件，编辑其内容如下，
+
+   ```
+   Package: *
+   Pin: release l=deepin-wine
+   Pin-Priority: 400
+   ```
+
+4. 添加XDG_DATA_DIRS配置
 
    这是为了让应用图标能正常显示，创建`/etc/profile.d/deepin-wine.i-m.dev.sh`文件，编辑其内容如下，
 
@@ -204,7 +205,7 @@ Deepin把QQ/微信之类的deepin-wine应用打包放在了deepin仓库中，因
    export XDG_DATA_DIRS
    ```
 
-4. 刷新软件源
+5. 刷新软件源
 
    ```sh
    sudo apt-get update
